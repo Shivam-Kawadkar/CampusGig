@@ -9,17 +9,17 @@ export function MarketingNav() {
       <div className="container flex h-16 items-center justify-between">
         <Logo />
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
-          <Link href="/tasks" className="transition-colors hover:text-foreground">
-            Browse tasks
-          </Link>
-          <Link
-            href="/leaderboard"
-            className="transition-colors hover:text-foreground"
-          >
-            Leaderboard
-          </Link>
           <Link href="#how" className="transition-colors hover:text-foreground">
             How it works
+          </Link>
+          <Link
+            href="#categories"
+            className="transition-colors hover:text-foreground"
+          >
+            Categories
+          </Link>
+          <Link href="#why" className="transition-colors hover:text-foreground">
+            Why CampusGig
           </Link>
         </nav>
         <div className="flex items-center gap-2">

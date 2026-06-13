@@ -72,7 +72,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/tasks">Browse tasks</Link>
+              <Link href="#how">See how it works</Link>
             </Button>
           </motion.div>
 

@@ -24,8 +24,8 @@ export function LeaderboardTeaser() {
             ranked weekly, monthly, and all-time.
           </p>
           <Button asChild variant="brand" className="mt-6">
-            <Link href="/leaderboard">
-              View leaderboard
+            <Link href="/login">
+              Sign in to compete
               <ArrowRight className="size-4" />
             </Link>
           </Button>

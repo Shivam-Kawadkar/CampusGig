@@ -18,10 +18,14 @@ export default function LandingPage() {
         <div id="how">
           <HowItWorks />
         </div>
-        <Categories />
+        <div id="categories">
+          <Categories />
+        </div>
         <LeaderboardTeaser />
         <StatsBand />
-        <WhyCampusGig />
+        <div id="why">
+          <WhyCampusGig />
+        </div>
         <Testimonials />
         <FeedbackSection />
         <CtaFooter />
