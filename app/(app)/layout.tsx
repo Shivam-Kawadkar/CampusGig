@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { getCurrentUser } from "@/lib/auth/user";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({
   children,
@@ -8,14 +9,44 @@ export default async function AppLayout({
 }) {
   const user = await getCurrentUser();
 
-  // Wallet balance/notifications are demo values until those modules are wired.
+  let unreadNotificationsCount = 0;
+  let walletPaise = 0;
+
+  if (user) {
+    const supabase = await createClient();
+
+    // 1. Fetch unread notifications count
+    const { count } = await supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+
+    if (count !== null) {
+      unreadNotificationsCount = count;
+    }
+
+    // 2. Fetch actual wallet balance
+    const { data: wallet } = await supabase
+      .from("wallets")
+      .select("balance")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (wallet) {
+      walletPaise = Number(wallet.balance);
+    }
+  }
+
   return (
     <AppShell
-      walletPaise={245000}
+      walletPaise={walletPaise}
       userName={user?.name ?? "Student"}
-      notifications={3}
+      notifications={unreadNotificationsCount}
+      userId={user?.id}
     >
       {children}
     </AppShell>
   );
 }
+

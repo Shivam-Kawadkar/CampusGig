@@ -16,7 +16,7 @@ function resolveFormat(type: CounterFormat): (n: number) => string {
     case "inr":
       return (n) => formatINR(Math.round(n));
     case "rank":
-      return (n) => `#${Math.round(n)}`;
+      return (n) => n <= 0 ? "Unranked" : `#${Math.round(n)}`;
     case "score":
       return (n) => n.toFixed(1);
     default:

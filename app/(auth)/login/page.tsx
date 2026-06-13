@@ -1,15 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { ShieldCheck, Sparkles, Trophy, AlertTriangle } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { GoogleButton } from "@/features/auth/components/google-button";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; error?: string }>;
 }) {
-  const { redirect } = await searchParams;
+  const { redirect, error } = await searchParams;
+  const isSuspended = error === "suspended";
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -60,6 +61,19 @@ export default async function LoginPage({
           <div className="mb-8 flex justify-center lg:hidden">
             <Logo />
           </div>
+
+          {/* Suspension banner */}
+          {isSuspended && (
+            <div className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3">
+              <AlertTriangle className="size-4 mt-0.5 shrink-0 text-destructive" />
+              <div>
+                <p className="text-sm font-semibold text-destructive">Account Suspended</p>
+                <p className="text-xs text-destructive/80 mt-0.5">
+                  Your account has been suspended by an admin. Please contact support if you think this is a mistake.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="text-center">
             <h2 className="text-2xl font-bold tracking-tight">
