@@ -4,17 +4,17 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuroraBackground } from "@/components/motion/aurora-background";
+import { FloatingReactions } from "@/components/motion/floating-reactions";
+import { GlowCard } from "@/components/motion/glow-card";
+import { LiveTicker } from "./live-ticker";
 import { formatINR } from "@/lib/utils";
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* Animated gradient blobs */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-blob" />
-        <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-secondary/20 blur-3xl animate-blob [animation-delay:3s]" />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-accent/20 blur-3xl animate-blob [animation-delay:6s]" />
-      </div>
+      <AuroraBackground className="-z-10" />
+      <FloatingReactions className="-z-10" />
 
       <div className="container grid gap-12 py-20 lg:grid-cols-2 lg:py-28">
         <div className="flex flex-col justify-center">
@@ -22,6 +22,15 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="mb-4 w-fit max-w-full"
+          >
+            <LiveTicker />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
             className="inline-flex w-fit items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium shadow-soft"
           >
             <Sparkles className="size-3.5 text-secondary" />
@@ -56,7 +65,7 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="mt-8 flex flex-wrap items-center gap-3"
           >
-            <Button asChild variant="brand" size="lg">
+            <Button asChild variant="brand" size="lg" className="shadow-glow">
               <Link href="/login">
                 Continue with Google
                 <ArrowRight className="size-4" />

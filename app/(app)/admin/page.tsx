@@ -9,11 +9,12 @@ import {
   ChevronDown,
   MessageSquare,
   Clock,
+  Star,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/user";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminDashboardData } from "@/features/disputes/actions";
-import { ResolveDisputePanel, SuspendUserButton, ModerateTaskButton } from "@/features/disputes/components/admin-actions";
+import { ResolveDisputePanel, SuspendUserButton, ModerateTaskButton, DeleteUserButton, EditUserRoleSelect } from "@/features/disputes/components/admin-actions";
 import { Badge } from "@/components/ui/badge";
 import { formatINR } from "@/lib/utils";
 
@@ -49,6 +50,13 @@ export default async function AdminPage() {
 
   const data = await getAdminDashboardData();
   if (!data) redirect("/dashboard");
+
+  const { data: feedbackRows } = await supabase
+    .from("feedback")
+    .select("id, name, email, rating, message, created_at")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const feedback = feedbackRows ?? [];
 
   const openDisputes = data.disputes.filter((d) => d.status === "opened");
   const resolvedDisputes = data.disputes.filter((d) => d.status === "resolved");
@@ -236,9 +244,17 @@ export default async function AdminPage() {
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{u.college || "—"}</td>
                       <td className="px-4 py-3 text-center">
-                        <Badge variant={u.role === "admin" ? "destructive" : "secondary"} className="text-[10px]">
-                          {u.role}
-                        </Badge>
+                        {u.id !== user.id ? (
+                          <EditUserRoleSelect
+                            userId={u.id}
+                            currentRole={u.role}
+                            userName={u.full_name}
+                          />
+                        ) : (
+                          <Badge variant="destructive" className="text-[10px]">
+                            {u.role}
+                          </Badge>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <Badge
@@ -251,13 +267,21 @@ export default async function AdminPage() {
                       <td className="px-4 py-3 text-center text-xs font-semibold">{u.completed_gigs}</td>
                       <td className="px-4 py-3 text-center text-xs">{u.rating_avg.toFixed(1)} ★</td>
                       <td className="px-4 py-3 text-right">
-                        {u.role !== "admin" && (
-                          <SuspendUserButton
-                            userId={u.id}
-                            currentStatus={u.status}
-                            userName={u.full_name}
-                          />
-                        )}
+                        <div className="flex justify-end gap-2 items-center">
+                          {u.id !== user.id && (
+                            <>
+                              <SuspendUserButton
+                                userId={u.id}
+                                currentStatus={u.status}
+                                userName={u.full_name}
+                              />
+                              <DeleteUserButton
+                                userId={u.id}
+                                userName={u.full_name}
+                              />
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -336,6 +360,54 @@ export default async function AdminPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+        </section>
+
+        {/* ── User Feedback ───────────────────────────────────────────────── */}
+        <section id="admin-feedback" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="size-5 text-secondary" />
+            <h2 className="text-lg font-bold tracking-tight">
+              User Feedback
+              <span className="ml-2 text-sm font-normal text-muted-foreground">({feedback.length})</span>
+            </h2>
+          </div>
+
+          {feedback.length === 0 ? (
+            <div className="rounded-xl border bg-card p-8 text-center text-muted-foreground">
+              <MessageSquare className="size-8 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No feedback submitted yet.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {feedback.map((f) => (
+                <div key={f.id} className="rounded-xl border bg-card p-4 shadow-soft space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate">{f.name}</p>
+                      {f.email && (
+                        <p className="text-[11px] text-muted-foreground truncate">{f.email}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`size-3.5 ${i < f.rating ? "fill-warning text-warning" : "text-muted-foreground/30"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed rounded-lg bg-muted/40 p-3">
+                    &ldquo;{f.message}&rdquo;
+                  </p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <Clock className="size-3" />
+                    {new Date(f.created_at).toLocaleString("en-IN")}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </section>

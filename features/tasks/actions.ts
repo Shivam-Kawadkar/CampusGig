@@ -26,7 +26,7 @@ export async function createTask(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "You must be signed in to post a task." };
 
-  const { title, description, categorySlug, budgetRupees, deadline, skills } =
+  const { title, description, categorySlug, budgetRupees, deadline, skills, attachmentUrls } =
     parsed.data;
 
   // Resolve category slug → id.
@@ -55,6 +55,24 @@ export async function createTask(
 
   if (error || !task) {
     return { ok: false, error: error?.message ?? "Could not create task." };
+  }
+
+  // Insert any uploaded attachments into task_attachments table.
+  if (attachmentUrls.length > 0) {
+    const attachmentRows = attachmentUrls.map((url) => ({
+      task_id: task.id,
+      file_url: url,
+      uploaded_by: user.id,
+    }));
+
+    const { error: attachErr } = await supabase
+      .from("task_attachments")
+      .insert(attachmentRows);
+
+    if (attachErr) {
+      console.error("Failed to insert task attachments:", attachErr);
+      // Non-fatal — task is created, just log the error
+    }
   }
 
   revalidatePath("/tasks");

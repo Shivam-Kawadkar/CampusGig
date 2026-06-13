@@ -56,7 +56,7 @@ export function OnboardingForm({
         </Field>
       )}
 
-      <Field label="Phone number" error={errors.phone?.message}>
+      <Field label="Phone number (optional)" error={errors.phone?.message}>
         <Input placeholder="+91 98765 43210" type="tel" {...register("phone")} />
       </Field>
 

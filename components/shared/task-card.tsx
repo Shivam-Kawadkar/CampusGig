@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Clock, Users } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { GlowCard } from "@/components/motion/glow-card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RatingStars } from "@/components/shared/rating-stars";
@@ -20,8 +19,7 @@ const categoryColors: Record<string, string> = {
 export function TaskCard({ task }: { task: TaskSummary }) {
   const overdue = deadlineLabel(task.deadline) === "Overdue";
   return (
-    <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-      <Card className="group flex h-full flex-col p-5 transition-shadow hover:shadow-lift">
+    <GlowCard className="group h-full" contentClassName="flex h-full flex-col p-5">
         <div className="flex items-center justify-between">
           <Badge
             className={cn(
@@ -86,7 +84,6 @@ export function TaskCard({ task }: { task: TaskSummary }) {
             className="ml-auto"
           />
         </div>
-      </Card>
-    </motion.div>
+    </GlowCard>
   );
 }

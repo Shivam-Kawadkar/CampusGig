@@ -63,14 +63,22 @@ export function TaskFilters() {
     <div className="space-y-4">
       {/* Row 1: Search + Sort */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <form onSubmit={onSearchSubmit} className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tasks…"
-            className="pl-9"
-          />
+        <form onSubmit={onSearchSubmit} className="relative flex flex-1 items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search tasks…"
+              className="pl-9 pr-3"
+            />
+          </div>
+          <button
+            type="submit"
+            className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
+          >
+            Search
+          </button>
         </form>
 
         <select

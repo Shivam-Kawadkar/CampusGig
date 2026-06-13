@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Loader2, Paperclip, FileText, Image, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { approveWork, requestRevision } from "../actions";
 
@@ -13,6 +13,7 @@ interface Submission {
   status: string;
   feedback: string | null;
   created_at: string;
+  file_urls?: string[] | null;
 }
 
 interface ReviewDeliverablesProps {
@@ -86,9 +87,49 @@ export function ReviewDeliverables({ submission, isPoster }: ReviewDeliverablesP
         </span>
       </div>
 
-      <div className="rounded-lg border bg-card p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/80 shadow-sm">
-        {submission.content}
-      </div>
+      {/* Text content */}
+      {submission.content && (
+        <div className="rounded-lg border bg-card p-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/80 shadow-sm">
+          {submission.content}
+        </div>
+      )}
+
+      {/* Attached files */}
+      {submission.file_urls && submission.file_urls.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <Paperclip className="size-3.5" />
+            Attached files ({submission.file_urls.length})
+          </p>
+          <ul className="space-y-1.5">
+            {submission.file_urls.map((url, i) => {
+              const filename = decodeURIComponent(url.split("/").pop() ?? `File ${i + 1}`).replace(/^\d+-/, "");
+              const isImage = /\.(jpe?g|png|gif|webp|svg)$/i.test(filename);
+              const isPdf = /\.pdf$/i.test(filename);
+              return (
+                <li key={url}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                  >
+                    {isImage ? (
+                      <Image className="size-4 text-blue-500 shrink-0" />
+                    ) : isPdf ? (
+                      <FileText className="size-4 text-red-500 shrink-0" />
+                    ) : (
+                      <File className="size-4 text-muted-foreground shrink-0" />
+                    )}
+                    <span className="flex-1 truncate font-medium text-foreground">{filename}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">↗</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {submission.feedback && (
         <div className="space-y-1 bg-muted/40 border border-dashed rounded-lg p-3.5 text-xs">

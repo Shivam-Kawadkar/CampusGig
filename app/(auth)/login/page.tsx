@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ShieldCheck, Sparkles, Trophy, AlertTriangle } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { GoogleButton } from "@/features/auth/components/google-button";
+import { EmailAuthForm } from "@/features/auth/components/email-auth-form";
 
 export default async function LoginPage({
   searchParams,
@@ -19,16 +20,7 @@ export default async function LoginPage({
         <div className="pointer-events-none absolute -right-16 top-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -left-10 bottom-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
 
-        <Link href="/" className="relative">
-          <Image
-            src="/logo.png"
-            alt="CampusGig"
-            width={170}
-            height={69}
-            priority
-            className="h-10 w-auto brightness-0 invert"
-          />
-        </Link>
+        <Logo size="lg" invert={true} />
 
         <div className="relative my-auto max-w-md">
           <h1 className="text-4xl font-extrabold leading-tight">
@@ -59,7 +51,7 @@ export default async function LoginPage({
       <div className="flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex justify-center lg:hidden">
-            <Logo />
+            <Logo size="lg" />
           </div>
 
           {/* Suspension banner */}
@@ -80,12 +72,21 @@ export default async function LoginPage({
               Welcome to CampusGig
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Sign in with your student Google account to continue.
+              Sign in with Google or your email to continue.
             </p>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 space-y-4">
             <GoogleButton redirectTo={redirect} />
+
+            {/* Divider */}
+            <div className="relative flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <EmailAuthForm redirectTo={redirect} />
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">

@@ -13,7 +13,7 @@ export function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 border-r bg-card lg:flex lg:flex-col">
       <div className="flex h-16 items-center border-b px-6">
-        <Logo />
+        <Logo size="lg" />
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {primaryNav.map((item) => {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Trophy, Award, TrendingUp, Zap, CheckCircle2, Clock, Sparkles, Star, ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getPerformanceDashboard } from "@/features/leaderboard/actions";
@@ -42,9 +42,6 @@ export default async function PerformanceDashboardPage() {
   }
 
   const performance = await getPerformanceDashboard(user.id);
-  if (!performance) {
-    notFound();
-  }
 
   // Calculate circular stroke details
   const radius = 50;

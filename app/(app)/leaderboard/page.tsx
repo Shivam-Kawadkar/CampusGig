@@ -124,6 +124,14 @@ export default async function LeaderboardPage() {
                       {entry.performanceScore.toFixed(1)}
                     </span>
                   </div>
+                  {entry.user.ratingAvg > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="size-3.5 fill-warning text-warning" />
+                      <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+                        {entry.user.ratingAvg.toFixed(1)}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Achievement Badges previews */}
@@ -160,9 +168,10 @@ export default async function LeaderboardPage() {
                   <tr className="border-b bg-muted/40 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <th className="px-5 py-3.5 text-center w-16">Rank</th>
                     <th className="px-5 py-3.5">Student Worker</th>
-                    <th className="px-5 py-3.5 text-center w-32">Completed Gigs</th>
+                    <th className="px-5 py-3.5 text-center w-24">Gigs</th>
+                    <th className="px-5 py-3.5 text-center w-24">Rating</th>
                     <th className="px-5 py-3.5 text-center w-36">Badges</th>
-                    <th className="px-5 py-3.5 text-right w-32">Score</th>
+                    <th className="px-5 py-3.5 text-right w-28">Score</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y text-sm">
@@ -192,6 +201,16 @@ export default async function LeaderboardPage() {
                       </td>
                       <td className="px-5 py-3.5 text-center font-medium text-foreground/80 tabular-nums">
                         {entry.completedTasks}
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        {entry.user.ratingAvg > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold">
+                            <Star className="size-3.5 fill-warning text-warning" />
+                            {entry.user.ratingAvg.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-1.5 flex-wrap">

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
+import { GlowCard } from "@/components/motion/glow-card";
 import {
   AnimatedCounter,
   type CounterFormat,
@@ -16,11 +16,26 @@ interface StatCardProps {
   hint?: string;
 }
 
-const accentMap = {
-  primary: "from-primary/10 text-primary",
-  accent: "from-accent/10 text-accent",
-  secondary: "from-secondary/10 text-secondary",
-  warning: "from-warning/15 text-warning-foreground",
+const accentMap: Record<
+  NonNullable<StatCardProps["accent"]>,
+  { chip: string; spot: string }
+> = {
+  primary: {
+    chip: "bg-gradient-to-br from-primary to-secondary",
+    spot: "hsl(var(--brand-1) / 0.20)",
+  },
+  accent: {
+    chip: "bg-gradient-to-br from-accent to-[hsl(174_72%_45%)]",
+    spot: "hsl(var(--accent) / 0.22)",
+  },
+  secondary: {
+    chip: "bg-gradient-to-br from-secondary to-[hsl(var(--brand-3))]",
+    spot: "hsl(var(--brand-2) / 0.22)",
+  },
+  warning: {
+    chip: "bg-gradient-to-br from-warning to-[hsl(24_92%_55%)]",
+    spot: "hsl(var(--warning) / 0.22)",
+  },
 };
 
 export function StatCard({
@@ -31,33 +46,26 @@ export function StatCard({
   accent = "primary",
   hint,
 }: StatCardProps) {
+  const a = accentMap[accent];
   return (
-    <Card className="relative overflow-hidden p-5 transition-shadow hover:shadow-lift">
-      <div
-        className={cn(
-          "absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br to-transparent blur-xl",
-          accentMap[accent]
-        )}
-      />
-      <div className="relative flex items-start justify-between">
-        <div>
+    <GlowCard className="glass p-5" spotlight={a.spot}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="mt-2 text-2xl font-bold">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             <AnimatedCounter value={value} formatType={formatType} />
           </p>
-          {hint && (
-            <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-          )}
+          {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
         </div>
         <div
           className={cn(
-            "grid h-10 w-10 place-items-center rounded-lg bg-muted",
-            accentMap[accent].split(" ")[1]
+            "grid size-11 shrink-0 place-items-center rounded-xl text-white shadow-glow",
+            a.chip
           )}
         >
           {icon}
         </div>
       </div>
-    </Card>
+    </GlowCard>
   );
 }

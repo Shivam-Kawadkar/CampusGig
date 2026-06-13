@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatINR } from "@/lib/utils";
+import {
+  getHeldPaymentForTask,
+  refundEscrowForTask,
+  releaseEscrowForTask,
+  splitEscrowForTask,
+} from "@/lib/payments/escrow";
 
 export interface DisputeResult {
   ok: boolean;
@@ -177,59 +184,29 @@ export async function resolveDispute(
 
   if (tErr || !task) return { ok: false, error: "Task not found." };
 
-  const budget = Number(task.budget);
+  const heldPayment = await getHeldPaymentForTask(dispute.task_id);
+  const budget = Number(heldPayment?.amount ?? task.budget);
 
-  // Financial resolution
+  // Financial resolution via escrow engine
   if (decision === "payout_worker" && task.selected_worker_id) {
-    // Credit full amount to worker
-    const { data: wWallet } = await supabase
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", task.selected_worker_id)
-      .maybeSingle();
-
-    await supabase
-      .from("wallets")
-      .update({ balance: (Number(wWallet?.balance) || 0) + budget })
-      .eq("user_id", task.selected_worker_id);
+    const result = await releaseEscrowForTask(dispute.task_id, task.selected_worker_id);
+    if (!result.ok) return { ok: false, error: result.error };
   } else if (decision === "refund_poster") {
-    // Refund full amount to poster
-    const { data: pWallet } = await supabase
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", task.poster_id)
-      .maybeSingle();
-
-    await supabase
-      .from("wallets")
-      .update({ balance: (Number(pWallet?.balance) || 0) + budget })
-      .eq("user_id", task.poster_id);
-  } else if (decision === "split") {
+    const result = await refundEscrowForTask(dispute.task_id);
+    if (!result.ok) return { ok: false, error: result.error };
+  } else if (decision === "split" && task.selected_worker_id) {
     const half = Math.floor(budget / 2);
-
-    // Credit poster
-    const { data: pWallet } = await supabase
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", task.poster_id)
-      .maybeSingle();
-    await supabase
-      .from("wallets")
-      .update({ balance: (Number(pWallet?.balance) || 0) + half })
-      .eq("user_id", task.poster_id);
-
-    // Credit worker
-    if (task.selected_worker_id) {
-      const { data: wWallet } = await supabase
-        .from("wallets")
-        .select("balance")
-        .eq("user_id", task.selected_worker_id)
-        .maybeSingle();
-      await supabase
-        .from("wallets")
-        .update({ balance: (Number(wWallet?.balance) || 0) + (budget - half) })
-        .eq("user_id", task.selected_worker_id);
-    }
+    const result = await splitEscrowForTask(
+      dispute.task_id,
+      task.poster_id,
+      task.selected_worker_id,
+      half,
+      budget - half
+    );
+    if (!result.ok) return { ok: false, error: result.error };
+  } else if (decision === "cancelled") {
+    const result = await refundEscrowForTask(dispute.task_id);
+    if (!result.ok) return { ok: false, error: result.error };
   }
 
   // Update dispute to resolved
@@ -277,6 +254,7 @@ export async function resolveDispute(
   revalidatePath("/dashboard");
   revalidatePath("/admin");
   revalidatePath("/notifications");
+  revalidatePath("/wallet");
 
   return { ok: true };
 }
@@ -358,6 +336,75 @@ export async function moderateTask(
   return { ok: true };
 }
 
+// ─── delete user (admin only) ────────────────────────────────────────────────
+
+export async function deleteUser(targetUserId: string): Promise<DisputeResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, error: "You must be signed in." };
+
+  const { data: callerRow } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (callerRow?.role !== "admin")
+    return { ok: false, error: "Only admins can delete users." };
+
+  if (user.id === targetUserId) {
+    return { ok: false, error: "You cannot delete your own admin account." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(targetUserId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+// ─── update user role (admin only) ───────────────────────────────────────────
+
+export async function updateUserRole(
+  targetUserId: string,
+  newRole: "student" | "admin"
+): Promise<DisputeResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, error: "You must be signed in." };
+
+  const { data: callerRow } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (callerRow?.role !== "admin")
+    return { ok: false, error: "Only admins can change user roles." };
+
+  if (user.id === targetUserId && newRole !== "admin") {
+    return { ok: false, error: "You cannot change your own role from admin." };
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({ role: newRole })
+    .eq("id", targetUserId);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 // ─── get admin dashboard data ────────────────────────────────────────────────
 
 export interface AdminDashboardData {
@@ -382,7 +429,7 @@ export interface AdminDashboardData {
   users: Array<{
     id: string;
     email: string;
-    role: string;
+    role: "student" | "admin";
     status: string;
     full_name: string;
     college: string;
@@ -500,7 +547,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
       users.push({
         id: u.id,
         email: u.email,
-        role: u.role,
+        role: u.role as "student" | "admin",
         status: u.status,
         full_name: prof?.full_name ?? "Student",
         college: prof?.college ?? "—",
@@ -514,7 +561,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData | null
   // Fetch tasks for moderation
   const { data: tasksRaw } = await supabase
     .from("tasks")
-    .select("id, title, status, budget, poster_id, created_at, category:task_categories(name)")
+    .select("id, title, status, budget, poster_id, created_at, category:categories(name)")
     .not("status", "in", '("cancelled","completed")')
     .order("created_at", { ascending: false })
     .limit(50);

@@ -23,22 +23,42 @@ export const metadata = {
 
 // ── Transaction type helper ───────────────────────────────────────────────────
 
-type TxType = "earned" | "spent" | "refund" | "topup";
+type LedgerTxType =
+  | "deposit"
+  | "hold"
+  | "release"
+  | "refund"
+  | "withdrawal"
+  | "commission";
 
 interface Transaction {
   id: string;
-  type: TxType;
+  type: LedgerTxType;
   label: string;
   sublabel: string;
   amount: number; // paise — positive = credit, negative = debit
   date: string;
 }
 
-const TX_META: Record<TxType, { icon: React.ElementType; color: string; bg: string }> = {
-  earned:  { icon: ArrowDownLeft, color: "text-success",     bg: "bg-success/10" },
-  spent:   { icon: ArrowUpRight,  color: "text-destructive", bg: "bg-destructive/10" },
-  refund:  { icon: ArrowDownLeft, color: "text-primary",     bg: "bg-primary/10" },
-  topup:   { icon: Coins,         color: "text-accent",      bg: "bg-accent/10" },
+const TX_LABELS: Record<LedgerTxType, string> = {
+  deposit: "Funds Added",
+  hold: "Escrow Hold",
+  release: "Gig Payout",
+  refund: "Escrow Refund",
+  withdrawal: "Withdrawal",
+  commission: "Platform Fee",
+};
+
+const TX_META: Record<
+  LedgerTxType,
+  { icon: React.ElementType; color: string; bg: string }
+> = {
+  deposit:    { icon: Coins,         color: "text-accent",      bg: "bg-accent/10" },
+  hold:       { icon: Lock,          color: "text-warning",     bg: "bg-warning/10" },
+  release:    { icon: ArrowDownLeft, color: "text-success",     bg: "bg-success/10" },
+  refund:     { icon: ArrowDownLeft, color: "text-primary",     bg: "bg-primary/10" },
+  withdrawal: { icon: ArrowUpRight,  color: "text-destructive", bg: "bg-destructive/10" },
+  commission: { icon: ArrowUpRight,  color: "text-muted-foreground", bg: "bg-muted" },
 };
 
 export default async function WalletPage() {
@@ -56,48 +76,50 @@ export default async function WalletPage() {
 
   const balance = Number(wallet?.balance ?? 0);
   const lockedBalance = Number(wallet?.locked_balance ?? 0);
-  const totalBalance = balance + lockedBalance;
 
-  // 2. Completed tasks where user was the worker → earnings
-  const { data: earnedTasks } = await supabase
-    .from("tasks")
-    .select("id, title, budget, updated_at")
-    .eq("selected_worker_id", user.id)
-    .eq("status", "completed")
-    .order("updated_at", { ascending: false });
+  // 2. Ledger transactions
+  const { data: ledgerRows } = await supabase
+    .from("transactions")
+    .select("id, type, amount, direction, created_at, task_id, tasks(title)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-  // 3. Completed tasks where user was the poster → spending
-  const { data: spentTasks } = await supabase
-    .from("tasks")
-    .select("id, title, budget, updated_at")
-    .eq("poster_id", user.id)
-    .eq("status", "completed")
-    .order("updated_at", { ascending: false });
+  const transactions: Transaction[] = (ledgerRows ?? []).map((row) => {
+    const txType = row.type as LedgerTxType;
+    const taskTitle = (() => {
+      const task = row.tasks as unknown;
+      if (Array.isArray(task)) return (task as { title: string }[])[0]?.title;
+      if (task && typeof task === "object") return (task as { title: string }).title;
+      return undefined;
+    })();
 
-  // 4. Build a unified transaction ledger
-  const transactions: Transaction[] = [
-    ...(earnedTasks ?? []).map((t) => ({
-      id: `earn-${t.id}`,
-      type: "earned" as TxType,
-      label: "Gig Payout",
-      sublabel: t.title,
-      amount: Number(t.budget),
-      date: t.updated_at,
-    })),
-    ...(spentTasks ?? []).map((t) => ({
-      id: `spent-${t.id}`,
-      type: "spent" as TxType,
-      label: "Task Payment",
-      sublabel: t.title,
-      amount: -Number(t.budget),
-      date: t.updated_at,
-    })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const signedAmount =
+      row.direction === "credit" ? Number(row.amount) : -Number(row.amount);
 
-  // 5. Summary stats
-  const totalEarned = (earnedTasks ?? []).reduce((s, t) => s + Number(t.budget), 0);
-  const totalSpent = (spentTasks ?? []).reduce((s, t) => s + Number(t.budget), 0);
-  const completedGigs = (earnedTasks ?? []).length;
+    return {
+      id: row.id,
+      type: txType,
+      label: TX_LABELS[txType] ?? row.type,
+      sublabel: taskTitle ?? "Wallet activity",
+      amount: signedAmount,
+      date: row.created_at,
+    };
+  });
+
+  // 3. Summary stats from ledger
+  const totalEarned = (ledgerRows ?? [])
+    .filter((r) => r.type === "release" && r.direction === "credit")
+    .reduce((s, r) => s + Number(r.amount), 0);
+  const totalSpent = (ledgerRows ?? [])
+    .filter((r) =>
+      (r.type === "hold" && r.direction === "debit") ||
+      (r.type === "withdrawal" && r.direction === "debit")
+    )
+    .reduce((s, r) => s + Number(r.amount), 0);
+  const completedGigs = (ledgerRows ?? []).filter(
+    (r) => r.type === "release" && r.direction === "credit"
+  ).length;
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -129,7 +151,7 @@ export default async function WalletPage() {
             </p>
             <div className="relative mt-4 flex items-center gap-1.5 text-xs opacity-80">
               <BadgeCheck className="size-3.5" />
-              Simulated wallet · Safe for demo
+              Escrow-protected · Simulated for demo
             </div>
           </div>
 

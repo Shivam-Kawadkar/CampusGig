@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export function MarketingNav() {
   return (
@@ -22,7 +23,8 @@ export function MarketingNav() {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
+          <ThemeToggle />
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link href="/login">Log in</Link>
           </Button>
           <Button asChild variant="brand" size="sm">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { resolveDispute, toggleUserSuspension, moderateTask } from "@/features/disputes/actions";
+import { resolveDispute, toggleUserSuspension, moderateTask, deleteUser, updateUserRole } from "@/features/disputes/actions";
 import { Button } from "@/components/ui/button";
 import { formatINR } from "@/lib/utils";
 import type { AdminDashboardData } from "@/features/disputes/actions";
@@ -127,6 +127,93 @@ export function SuspendUserButton({ userId, currentStatus, userName }: SuspendUs
     >
       {loading ? "…" : status === "suspended" ? `Activate ${userName}` : `Suspend ${userName}`}
     </Button>
+  );
+}
+
+// ─── Delete User Button ──────────────────────────────────────────────────────
+
+interface DeleteUserButtonProps {
+  userId: string;
+  userName: string;
+}
+
+export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
+  const [loading, setLoading] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+
+  async function handleDelete() {
+    const confirmDelete = window.confirm(`Are you absolutely sure you want to delete user ${userName} completely? This action CANNOT be undone.`);
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    const res = await deleteUser(userId);
+    if (res.ok) {
+      setDeleted(true);
+      window.location.reload();
+    } else {
+      alert(res.error ?? "Failed to delete user.");
+      setLoading(false);
+    }
+  }
+
+  if (deleted) {
+    return <span className="text-xs text-muted-foreground italic">Deleted</span>;
+  }
+
+  return (
+    <Button
+      id={`delete-user-${userId}`}
+      variant="destructive"
+      size="sm"
+      onClick={handleDelete}
+      disabled={loading}
+      className="text-xs bg-red-600 hover:bg-red-700 text-white font-medium"
+    >
+      {loading ? "…" : "Delete"}
+    </Button>
+  );
+}
+
+// ─── Edit User Role Select ───────────────────────────────────────────────────
+
+interface EditUserRoleSelectProps {
+  userId: string;
+  currentRole: "student" | "admin";
+  userName: string;
+}
+
+export function EditUserRoleSelect({ userId, currentRole, userName }: EditUserRoleSelectProps) {
+  const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState(currentRole);
+
+  async function handleRoleChange(newRole: "student" | "admin") {
+    if (newRole === role) return;
+
+    const confirmChange = window.confirm(`Are you sure you want to change ${userName}'s access role to ${newRole}?`);
+    if (!confirmChange) return;
+
+    setLoading(true);
+    const res = await updateUserRole(userId, newRole);
+    setLoading(false);
+    if (res.ok) {
+      setRole(newRole);
+      window.location.reload();
+    } else {
+      alert(res.error ?? "Failed to update role.");
+    }
+  }
+
+  return (
+    <select
+      id={`role-select-${userId}`}
+      value={role}
+      onChange={(e) => handleRoleChange(e.target.value as "student" | "admin")}
+      disabled={loading}
+      className="rounded-lg border bg-background px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      <option value="student">Student</option>
+      <option value="admin">Admin</option>
+    </select>
   );
 }
 

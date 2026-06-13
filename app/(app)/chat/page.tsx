@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, CircleDollarSign, Calendar, MessageSquareMore } from "lucide-react";
+import { MessageSquare, CircleDollarSign, Calendar, MessageSquareMore, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +16,7 @@ export default async function ChatListPage() {
   const supabase = await createClient();
 
   // 1. Fetch chats where current user is poster or worker
-  const { data: chats, error: chatsErr } = await supabase
+  const { data: chats } = await supabase
     .from("chats")
     .select(`
       id,
@@ -28,24 +28,30 @@ export default async function ChatListPage() {
     `)
     .or(`poster_id.eq.${user.id},worker_id.eq.${user.id}`);
 
-  let chatList: Array<{
-    id: string;
-    taskId: string;
-    taskTitle: string;
-    taskBudget: number;
-    role: string;
+  interface GroupedChat {
+    otherUserId: string;
     otherUser: {
       name: string;
       avatarUrl?: string;
       college: string;
     };
-    latestMessage: string;
-    timestamp: string;
-  }> = [];
+    role: string;
+    taskCount: number;
+    chats: {
+      chatId: string;
+      taskId: string;
+      taskTitle: string;
+      taskBudget: number;
+      latestMessage: string;
+      timestamp: string;
+    }[];
+  }
+
+  let groupedChats: GroupedChat[] = [];
 
   if (chats && chats.length > 0) {
     const chatIds = chats.map((c) => c.id);
-    const otherUserIds = chats.map((c) => (c.poster_id === user.id ? c.worker_id : c.poster_id));
+    const otherUserIds = [...new Set(chats.map((c) => (c.poster_id === user.id ? c.worker_id : c.poster_id)))];
 
     // 2. Fetch profiles of other participants
     const { data: profiles } = await supabase
@@ -69,31 +75,59 @@ export default async function ChatListPage() {
       }
     });
 
-    chatList = chats
-      .map((c) => {
-        const otherId = c.poster_id === user.id ? c.worker_id : c.poster_id;
-        const profile = profileMap.get(otherId);
-        const latestMsg = latestMessageMap.get(c.id);
+    // 4. Build per-chat entries
+    const perChatEntries = chats.map((c) => {
+      const otherId = c.poster_id === user.id ? c.worker_id : c.poster_id;
+      const profile = profileMap.get(otherId);
+      const latestMsg = latestMessageMap.get(c.id);
+      const taskInfo = c.task as unknown as { title: string; budget: number; status: string } | null;
 
-        // Type coercion
-        const taskInfo = c.task as unknown as { title: string; budget: number; status: string } | null;
+      return {
+        chatId: c.id,
+        taskId: c.task_id,
+        taskTitle: taskInfo?.title || "Untitled Task",
+        taskBudget: taskInfo?.budget || 0,
+        role: c.poster_id === user.id ? "poster" : "worker",
+        otherUserId: otherId,
+        otherUser: {
+          name: profile?.full_name || "Student",
+          avatarUrl: profile?.avatar_url || undefined,
+          college: profile?.college || "—",
+        },
+        latestMessage: latestMsg?.content || "No messages yet",
+        timestamp: latestMsg?.created_at || c.created_at,
+      };
+    });
 
+    // 5. Group by other user
+    const userGroupMap = new Map<string, typeof perChatEntries>();
+    perChatEntries.forEach((entry) => {
+      const list = userGroupMap.get(entry.otherUserId) || [];
+      list.push(entry);
+      userGroupMap.set(entry.otherUserId, list);
+    });
+
+    groupedChats = Array.from(userGroupMap.values())
+      .map((entries) => {
+        // Sort by most recent timestamp within the group
+        entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const latest = entries[0];
         return {
-          id: c.id,
-          taskId: c.task_id,
-          taskTitle: taskInfo?.title || "Untitled Task",
-          taskBudget: taskInfo?.budget || 0,
-          role: c.poster_id === user.id ? "poster" : "worker",
-          otherUser: {
-            name: profile?.full_name || "Student",
-            avatarUrl: profile?.avatar_url || undefined,
-            college: profile?.college || "—",
-          },
-          latestMessage: latestMsg?.content || "No messages yet",
-          timestamp: latestMsg?.created_at || c.created_at,
+          otherUserId: latest.otherUserId,
+          otherUser: latest.otherUser,
+          role: latest.role,
+          taskCount: entries.length,
+          chats: entries.map((e) => ({
+            chatId: e.chatId,
+            taskId: e.taskId,
+            taskTitle: e.taskTitle,
+            taskBudget: e.taskBudget,
+            latestMessage: e.latestMessage,
+            timestamp: e.timestamp,
+          })),
         };
       })
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      .sort((a, b) => new Date(b.chats[0].timestamp).getTime() - new Date(a.chats[0].timestamp).getTime());
   }
 
   return (
@@ -108,7 +142,7 @@ export default async function ChatListPage() {
         </p>
       </FadeIn>
 
-      {chatList.length === 0 ? (
+      {groupedChats.length === 0 ? (
         <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center text-muted-foreground">
           <div className="rounded-full bg-muted p-4">
             <MessageSquareMore className="size-8 text-muted-foreground" />
@@ -123,49 +157,118 @@ export default async function ChatListPage() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {chatList.map((chat) => (
-            <Link key={chat.id} href={`/chat/${chat.taskId}`}>
-              <Card className="flex items-center justify-between p-4 transition-all hover:bg-muted/40 hover:shadow-soft group cursor-pointer">
-                <div className="flex items-center gap-4 min-w-0">
-                  <Avatar className="h-11 w-11 shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-                    <AvatarImage src={chat.otherUser.avatarUrl} alt={chat.otherUser.name} />
-                    <AvatarFallback>{initials(chat.otherUser.name)}</AvatarFallback>
+          {groupedChats.map((group) => {
+            if (group.taskCount === 1) {
+              const chat = group.chats[0];
+              return (
+                <Link key={group.otherUserId} href={`/chat/${chat.taskId}`}>
+                  <Card className="flex items-center justify-between p-4 transition-all hover:bg-muted/40 hover:shadow-soft group cursor-pointer animate-fade-in">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <Avatar className="h-11 w-11 shrink-0 ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
+                        <AvatarImage src={group.otherUser.avatarUrl} alt={group.otherUser.name} />
+                        <AvatarFallback>{initials(group.otherUser.name)}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-sm group-hover:text-primary transition-colors">
+                            {group.otherUser.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                            {group.otherUser.college}
+                          </span>
+                          <Badge variant="secondary" className="capitalize text-[10px] py-0 px-1.5">
+                            {group.role}
+                          </Badge>
+                        </div>
+                        <p className="text-xs font-semibold text-foreground/80 truncate max-w-[280px] sm:max-w-md">
+                          {chat.taskTitle}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[280px] sm:max-w-md">
+                          {chat.latestMessage}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
+                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                        {new Date(chat.timestamp).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <span className="text-xs font-bold text-accent tabular-nums">
+                        {formatINR(chat.taskBudget)}
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            }
+
+            return (
+              <Card key={group.otherUserId} className="p-4 space-y-3 animate-fade-in">
+                {/* Header with User Info */}
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-11 w-11 shrink-0">
+                    <AvatarImage src={group.otherUser.avatarUrl} alt={group.otherUser.name} />
+                    <AvatarFallback>{initials(group.otherUser.name)}</AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0 space-y-1">
+                  <div className="min-w-0 space-y-0.5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-sm group-hover:text-primary transition-colors">
-                        {chat.otherUser.name}
+                      <span className="font-semibold text-sm">
+                        {group.otherUser.name}
                       </span>
                       <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                        {chat.otherUser.college}
+                        {group.otherUser.college}
                       </span>
                       <Badge variant="secondary" className="capitalize text-[10px] py-0 px-1.5">
-                        {chat.role}
+                        {group.role}
+                      </Badge>
+                      <Badge variant="accent" className="text-[10px] py-0 px-1.5">
+                        {group.taskCount} tasks
                       </Badge>
                     </div>
-                    <p className="text-xs font-semibold text-foreground/80 truncate max-w-[280px] sm:max-w-md">
-                      {chat.taskTitle}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate max-w-[280px] sm:max-w-md">
-                      {chat.latestMessage}
+                    <p className="text-xs text-muted-foreground">
+                      Multiple active task conversations with this user
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1.5 shrink-0 text-right">
-                  <span className="text-[10px] text-muted-foreground tabular-nums">
-                    {new Date(chat.timestamp).toLocaleTimeString("en-IN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                  <span className="text-xs font-bold text-accent tabular-nums">
-                    {formatINR(chat.taskBudget)}
-                  </span>
+                {/* Sub-list of task chats */}
+                <div className="border-t pt-2 space-y-1">
+                  {group.chats.map((chat) => (
+                    <Link key={chat.chatId} href={`/chat/${chat.taskId}`}>
+                      <div className="flex items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors group/item cursor-pointer">
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-foreground group-hover/item:text-primary transition-colors truncate">
+                              {chat.taskTitle}
+                            </span>
+                            <span className="text-[10px] font-medium text-accent shrink-0">
+                              {formatINR(chat.taskBudget)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate max-w-[250px] sm:max-w-xl">
+                            {chat.latestMessage}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[10px] text-muted-foreground tabular-nums">
+                            {new Date(chat.timestamp).toLocaleTimeString("en-IN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                          <ChevronRight className="size-3.5 text-muted-foreground/60 group-hover/item:text-primary group-hover/item:translate-x-0.5 transition-all" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               </Card>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

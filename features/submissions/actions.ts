@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatINR } from "@/lib/utils";
+import { calcCommission } from "@/lib/payments/constants";
+import { releaseEscrowForTask } from "@/lib/payments/escrow";
 
 export interface SubmissionResult {
   ok: boolean;
@@ -11,7 +14,8 @@ export interface SubmissionResult {
 
 export async function submitWork(
   taskId: string,
-  content: string
+  content: string,
+  fileUrls: string[] = []
 ): Promise<SubmissionResult> {
   const supabase = await createClient();
   const {
@@ -48,6 +52,7 @@ export async function submitWork(
       task_id: taskId,
       worker_id: user.id,
       content,
+      file_urls: fileUrls,
       status: "submitted"
     });
 
@@ -55,8 +60,9 @@ export async function submitWork(
     return { ok: false, error: subErr.message };
   }
 
-  // 3. Update task status to submitted
-  const { error: taskUpdateErr } = await supabase
+  // 3. Update task status to submitted (using admin client to bypass RLS since worker has no update access to tasks table)
+  const adminSupabase = createAdminClient();
+  const { error: taskUpdateErr } = await adminSupabase
     .from("tasks")
     .update({ status: "submitted" })
     .eq("id", taskId);
@@ -92,6 +98,7 @@ export async function approveWork(
   feedback?: string
 ): Promise<SubmissionResult> {
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -124,8 +131,22 @@ export async function approveWork(
     return { ok: false, error: "Task is not pending approval." };
   }
 
-  // 2. Update submission status to approved
-  const { error: subUpdateErr } = await supabase
+  // 2. Fetch escrow details and release escrow first
+  const { data: heldPayment } = await supabase
+    .from("payments")
+    .select("amount, commission")
+    .eq("task_id", task.id)
+    .eq("escrow_status", "held")
+    .maybeSingle();
+
+  const releaseResult = await releaseEscrowForTask(task.id, task.selected_worker_id);
+  if (!releaseResult.ok) {
+    console.error("Escrow release failed:", releaseResult.error);
+    return { ok: false, error: releaseResult.error ?? "Could not release escrow payment." };
+  }
+
+  // 3. Update submission status to approved (using admin client to bypass RLS restrictions)
+  const { error: subUpdateErr } = await adminSupabase
     .from("submissions")
     .update({
       status: "approved",
@@ -137,8 +158,8 @@ export async function approveWork(
     return { ok: false, error: subUpdateErr.message };
   }
 
-  // 3. Update task status to completed
-  const { error: taskUpdateErr } = await supabase
+  // 4. Update task status to completed (using admin client to bypass RLS restrictions)
+  const { error: taskUpdateErr } = await adminSupabase
     .from("tasks")
     .update({ status: "completed" })
     .eq("id", task.id);
@@ -147,26 +168,8 @@ export async function approveWork(
     return { ok: false, error: taskUpdateErr.message };
   }
 
-  // 4. Simulate payment: transfer task budget from poster to worker's wallet
-  // Fetch current worker wallet
-  const { data: wallet } = await supabase
-    .from("wallets")
-    .select("balance")
-    .eq("user_id", task.selected_worker_id)
-    .maybeSingle();
-
-  const currentBalance = wallet?.balance ? Number(wallet.balance) : 0;
-  const newBalance = currentBalance + Number(task.budget);
-
-  // Update worker's wallet
-  const { error: walletErr } = await supabase
-    .from("wallets")
-    .update({ balance: newBalance })
-    .eq("user_id", task.selected_worker_id);
-
-  if (walletErr) {
-    console.error("Failed to credit worker wallet: ", walletErr);
-  }
+  const escrowAmount = Number(heldPayment?.amount ?? task.budget);
+  const workerPayout = escrowAmount - Number(heldPayment?.commission ?? calcCommission(escrowAmount));
 
   // 5. Send notification to the worker
   const { error: notifErr } = await supabase
@@ -175,7 +178,7 @@ export async function approveWork(
       user_id: task.selected_worker_id,
       type: "proposal_completed",
       title: "Work Approved! 🎉",
-      body: `Your work for "${task.title}" was approved. ${formatINR(task.budget)} credited to your wallet.`,
+      body: `Your work for "${task.title}" was approved. ${formatINR(workerPayout)} released to your wallet (escrow).`,
       payload: { task_id: task.id }
     });
 
@@ -187,6 +190,7 @@ export async function approveWork(
   revalidatePath("/dashboard");
   revalidatePath("/notifications");
   revalidatePath("/leaderboard");
+  revalidatePath("/wallet");
 
   return { ok: true };
 }
@@ -196,6 +200,7 @@ export async function requestRevision(
   feedback: string
 ): Promise<SubmissionResult> {
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -232,8 +237,8 @@ export async function requestRevision(
     return { ok: false, error: "Task is not pending approval." };
   }
 
-  // 2. Update submission status to revision_requested
-  const { error: subUpdateErr } = await supabase
+  // 2. Update submission status to revision_requested (using admin client to bypass RLS)
+  const { error: subUpdateErr } = await adminSupabase
     .from("submissions")
     .update({
       status: "revision_requested",
@@ -245,8 +250,8 @@ export async function requestRevision(
     return { ok: false, error: subUpdateErr.message };
   }
 
-  // 3. Reset task status back to in_progress
-  const { error: taskUpdateErr } = await supabase
+  // 3. Reset task status back to in_progress (using admin client to bypass RLS)
+  const { error: taskUpdateErr } = await adminSupabase
     .from("tasks")
     .update({ status: "in_progress" })
     .eq("id", task.id);

@@ -12,7 +12,9 @@ export const onboardingSchema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^\+?[0-9]{10,15}$/, "Enter a valid phone number"),
+    .regex(/^\+?[0-9]{10,15}$/, "Enter a valid phone number")
+    .optional()
+    .or(z.literal("")),
   skills: z.array(z.string().trim().min(1)).max(15).default([]),
 });
 

@@ -6,10 +6,9 @@ import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { getCurrentUser } from "@/lib/auth/user";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export const metadata = { title: "Complete your profile" };
+export const metadata = { title: "Complete your profile — CampusGig" };
 
 export default async function OnboardingPage() {
-  // When Supabase is wired, require a session.
   if (isSupabaseConfigured) {
     const user = await getCurrentUser();
     if (!user) redirect("/login?redirect=/onboarding");

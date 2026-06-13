@@ -65,13 +65,19 @@ const config: Config = {
       },
       backgroundImage: {
         "gradient-brand":
-          "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%)",
+          "linear-gradient(135deg, hsl(var(--brand-1)) 0%, hsl(var(--brand-2)) 50%, hsl(var(--brand-3)) 100%)",
         "gradient-accent":
           "linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(174 72% 45%) 100%)",
+        "gradient-mesh":
+          "radial-gradient(at 20% 25%, hsl(var(--brand-1) / 0.35) 0px, transparent 50%), radial-gradient(at 80% 20%, hsl(var(--brand-2) / 0.3) 0px, transparent 50%), radial-gradient(at 65% 80%, hsl(var(--brand-3) / 0.28) 0px, transparent 50%)",
+        "gradient-aurora":
+          "linear-gradient(110deg, hsl(var(--brand-1)), hsl(var(--brand-2)), hsl(var(--brand-3)), hsl(var(--brand-1)))",
       },
       boxShadow: {
         soft: "0 2px 8px -2px rgb(15 23 42 / 0.08), 0 4px 16px -4px rgb(15 23 42 / 0.06)",
         lift: "0 8px 24px -6px rgb(79 70 229 / 0.18), 0 4px 12px -4px rgb(15 23 42 / 0.08)",
+        glow: "0 0 0 1px hsl(var(--brand-1) / 0.25), 0 10px 40px -8px hsl(var(--brand-1) / 0.5)",
+        "glow-accent": "0 0 0 1px hsl(var(--accent) / 0.3), 0 10px 40px -8px hsl(var(--accent) / 0.5)",
       },
       keyframes: {
         "fade-up": {
@@ -86,10 +92,30 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        aurora: {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "1", boxShadow: "0 0 0 0 hsl(var(--glow) / 0.5)" },
+          "50%": { opacity: "0.85", boxShadow: "0 0 0 8px hsl(var(--glow) / 0)" },
+        },
+        "gradient-x": {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out both",
         blob: "blob 14s ease-in-out infinite",
+        aurora: "aurora 18s ease-in-out infinite",
+        float: "float 5s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 2.4s ease-in-out infinite",
+        "gradient-x": "gradient-x 6s ease infinite",
       },
     },
   },

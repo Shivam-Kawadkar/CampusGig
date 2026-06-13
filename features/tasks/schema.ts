@@ -21,6 +21,7 @@ export const createTaskSchema = z.object({
     .date()
     .refine((d) => d.getTime() > Date.now(), "Deadline must be in the future"),
   skills: z.array(z.string().trim().min(1)).max(8).default([]),
+  attachmentUrls: z.array(z.string().url()).max(5).default([]),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

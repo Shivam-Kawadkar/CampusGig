@@ -11,6 +11,7 @@ export default async function AppLayout({
 
   let unreadNotificationsCount = 0;
   let walletPaise = 0;
+  let avatarUrl: string | undefined;
 
   if (user) {
     const supabase = await createClient();
@@ -36,6 +37,15 @@ export default async function AppLayout({
     if (wallet) {
       walletPaise = Number(wallet.balance);
     }
+
+    // 3. Fetch profile avatar
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    avatarUrl = profile?.avatar_url ?? user.avatarUrl;
   }
 
   return (
@@ -44,6 +54,7 @@ export default async function AppLayout({
       userName={user?.name ?? "Student"}
       notifications={unreadNotificationsCount}
       userId={user?.id}
+      avatarUrl={avatarUrl}
     >
       {children}
     </AppShell>

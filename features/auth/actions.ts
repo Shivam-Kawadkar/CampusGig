@@ -8,9 +8,8 @@ import { onboardingSchema, type OnboardingInput } from "./schema";
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 /**
- * Completes onboarding: validates input, updates the user's profile + phone,
- * marks onboarding complete. (Phone OTP verification is a follow-up step;
- * for now the phone is stored and flagged when a provider is wired.)
+ * Completes onboarding: validates input, saves profile, marks onboarding complete.
+ * Email is already verified via Google OAuth — no additional OTP needed.
  */
 export async function completeOnboarding(
   input: OnboardingInput
@@ -42,12 +41,13 @@ export async function completeOnboarding(
 
   if (profileError) return { ok: false, error: profileError.message };
 
-  const { error: userError } = await supabase
-    .from("users")
-    .update({ phone })
-    .eq("id", user.id);
-
-  if (userError) return { ok: false, error: userError.message };
+  // Store phone if provided (optional, no OTP verification required).
+  if (phone) {
+    await supabase
+      .from("users")
+      .update({ phone })
+      .eq("id", user.id);
+  }
 
   revalidatePath("/dashboard");
   return { ok: true };

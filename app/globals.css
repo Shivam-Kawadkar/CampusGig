@@ -41,39 +41,50 @@
     --ring: 243 75% 59%;
 
     --radius: 0.875rem;
+
+    /* Bolder brand mesh stops — Indigo → Fuchsia → Cyan */
+    --brand-1: 243 75% 59%;   /* indigo #4F46E5 */
+    --brand-2: 292 84% 61%;   /* fuchsia #D946EF */
+    --brand-3: 189 94% 43%;   /* cyan #06B6D4 */
+    --glow: 243 75% 59%;      /* default glow color */
   }
 
   .dark {
-    --background: 222 47% 7%;
+    --background: 240 30% 5%;
     --foreground: 210 40% 98%;
 
-    --card: 222 40% 11%;
+    --card: 240 24% 9%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 40% 11%;
+    --popover: 240 26% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 243 75% 66%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 243 90% 70%;
+    --primary-foreground: 240 30% 6%;
 
-    --secondary: 262 83% 68%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 292 90% 70%;
+    --secondary-foreground: 240 30% 6%;
 
-    --accent: 160 74% 45%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 160 84% 48%;
+    --accent-foreground: 240 30% 6%;
 
-    --warning: 38 92% 55%;
-    --warning-foreground: 222 47% 11%;
+    --warning: 38 95% 58%;
+    --warning-foreground: 240 30% 6%;
 
-    --destructive: 347 77% 58%;
+    --destructive: 347 85% 62%;
     --destructive-foreground: 210 40% 98%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 240 20% 15%;
+    --muted-foreground: 220 16% 65%;
 
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 243 75% 66%;
+    --border: 240 20% 18%;
+    --input: 240 20% 18%;
+    --ring: 243 90% 70%;
+
+    --brand-1: 243 90% 70%;
+    --brand-2: 292 90% 70%;
+    --brand-3: 189 94% 55%;
+    --glow: 243 90% 70%;
   }
 
   * {
@@ -92,8 +103,54 @@
 }
 
 @layer utilities {
+  /* Animated 3-stop brand gradient text */
   .text-gradient-brand {
-    @apply bg-gradient-brand bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      110deg,
+      hsl(var(--brand-1)),
+      hsl(var(--brand-2)),
+      hsl(var(--brand-3)),
+      hsl(var(--brand-1))
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-x 6s ease infinite;
+  }
+
+  /* Frosted glass surface */
+  .glass {
+    background-color: hsl(var(--card) / 0.6);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  /* Neon glow edges */
+  .glow-primary {
+    box-shadow: 0 0 0 1px hsl(var(--brand-1) / 0.25),
+      0 8px 30px -8px hsl(var(--brand-1) / 0.45);
+  }
+  .glow-accent {
+    box-shadow: 0 0 0 1px hsl(var(--accent) / 0.3),
+      0 8px 30px -8px hsl(var(--accent) / 0.45);
+  }
+  .border-glow {
+    border-color: hsl(var(--glow) / 0.5);
+    box-shadow: 0 0 18px -4px hsl(var(--glow) / 0.5);
+  }
+
+  /* Animated mesh-gradient backdrop */
+  .bg-mesh {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 18% 22%, hsl(var(--brand-1) / 0.28) 0px, transparent 50%),
+      radial-gradient(at 82% 18%, hsl(var(--brand-2) / 0.24) 0px, transparent 50%),
+      radial-gradient(at 70% 78%, hsl(var(--brand-3) / 0.22) 0px, transparent 50%),
+      radial-gradient(at 25% 82%, hsl(var(--accent) / 0.18) 0px, transparent 50%);
+    background-size: 180% 180%;
+    animation: aurora 18s ease-in-out infinite;
   }
 
   .shimmer {

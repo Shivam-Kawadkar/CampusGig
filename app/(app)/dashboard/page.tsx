@@ -20,7 +20,6 @@ import { getCurrentUser } from "@/lib/auth/user";
 import { FadeIn } from "@/components/motion/fade-in";
 import { StatCard } from "@/components/shared/stat-card";
 import { TaskCard } from "@/components/shared/task-card";
-import { demoTasks } from "@/lib/demo-data";
 import type { TaskSummary } from "@/lib/types";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -248,8 +247,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }
   }
 
-  const showDemo = role === "work" && recommendedTasks.length === 0;
-  const tasks = showDemo ? demoTasks.slice(0, 3) : recommendedTasks;
+  const tasks = recommendedTasks;
 
   // 5. Fetch Poster Gigs (for Hire view)
   interface PosterTask {
@@ -301,7 +299,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     .order("rank", { ascending: true })
     .limit(3);
 
-  let topGiggers = [];
+  let topGiggers: { id: string; rank: number; name: string; college: string; score: string; badge: string }[] = [];
   if (rawTopGiggers && rawTopGiggers.length > 0) {
     const topUserIds = rawTopGiggers.map((e) => e.user_id);
     const { data: topProfiles } = await supabase
@@ -322,12 +320,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       };
     });
   } else {
-    // Fallback if leaderboard is empty
-    topGiggers = [
-      { id: "fallback-1", rank: 1, name: "Rohan Sharma", college: "IIT Delhi", score: "98.2", badge: "🥇" },
-      { id: "fallback-2", rank: 2, name: "Priya Patel", college: "BITS Pilani", score: "94.5", badge: "🥈" },
-      { id: "fallback-3", rank: 3, name: "Aman Verma", college: "Delhi University", score: "91.8", badge: "🥉" }
-    ];
+    topGiggers = [];
   }
 
   return (
@@ -503,7 +496,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <div>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">
-                  {showDemo ? "Recommended for you (Sample)" : "Recommended for you"}
+                  {"Recommended for you"}
                 </h2>
                 <span className="text-xs text-muted-foreground">Based on active campus tasks</span>
               </div>
@@ -699,21 +692,27 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
 
             <div className="space-y-3">
-              {topGiggers.map((gigger, index) => (
-                <div key={`${gigger.id || 'gigger'}-${gigger.rank}-${index}`} className="flex items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base shrink-0">{gigger.badge}</span>
-                    <div>
-                      <p className="font-semibold">{gigger.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{gigger.college}</p>
+              {topGiggers.length > 0 ? (
+                topGiggers.map((gigger, index) => (
+                  <div key={`${gigger.id || 'gigger'}-${gigger.rank}-${index}`} className="flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base shrink-0">{gigger.badge}</span>
+                      <div>
+                        <p className="font-semibold">{gigger.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{gigger.college}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-accent">{gigger.score}</p>
+                      <p className="text-[9px] text-muted-foreground">Rating score</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-accent">{gigger.score}</p>
-                    <p className="text-[9px] text-muted-foreground">Rating score</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="py-4 text-center text-xs text-muted-foreground">
+                  No rankings yet — complete tasks to appear here!
+                </p>
+              )}
 
               <div className="border-t pt-3">
                 <Link href="/leaderboard" className="block text-center text-xs font-semibold text-primary hover:underline">

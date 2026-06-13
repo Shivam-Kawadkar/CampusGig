@@ -2,19 +2,41 @@
 
 # 🎓 CampusGig
 
-### A student skill-based marketplace where students post tasks and other students earn money completing them.
+**A student skill-based marketplace where students post tasks and other students earn money completing them.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Razorpay](https://img.shields.io/badge/Razorpay-02042B?style=flat&logo=razorpay&logoColor=white)](https://razorpay.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com/)
 
+**Status:** 🚀 **MVP in Development** | **Phase:** Foundation → Core Marketplace
+
 </div>
 
 ---
 
-## 📖 Overview
+## � Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [System Architecture](#️-system-architecture)
+- [User Roles](#-user-roles)
+- [Getting Started](#-getting-started)
+- [Development](#-development)
+- [Payment Model](#-payment--escrow-model)
+- [Leaderboard & Ranking](#-leaderboard--ranking-system)
+- [Security](#-security-highlights)
+- [Roadmap](#-development-roadmap)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## �📖 Overview
 
 **CampusGig** is a full-stack web platform that creates a trusted, hyper-local micro-economy inside colleges. It connects two kinds of students:
 
@@ -29,35 +51,35 @@ The platform manages the **entire gig lifecycle** — discovery, posting, biddin
 
 ## ✨ Key Features
 
-| Category | Features |
-|---|---|
-| **Auth & Identity** | Google OAuth login, phone OTP verification, verified-student badge |
-| **Profiles** | College, course, year, skills, reputation, badges, wallet |
-| **Tasks** | Posting, categories, budget & deadline, file attachments, status lifecycle |
-| **Discovery** | Search, filters (category/budget/deadline/skill/college), sorting |
-| **Bidding** | Proposal system, worker comparison & selection |
-| **Coordination** | Real-time chat, contact sharing after acceptance, meeting scheduling |
-| **Delivery** | Work submission, review, approve / request revision |
-| **Payments** | Razorpay escrow (hold → release), wallet, withdrawals, transaction history |
-| **Trust** | Ratings & reviews, skill verification badges, dispute management |
-| **Engagement** | Leaderboard & ranking (weekly/monthly/all-time/category), achievement badges, performance dashboard |
-| **Governance** | Admin panel (users, tasks, disputes, payouts, analytics) |
-| **Notifications** | Real-time in-app notifications |
+| Category            | Features                                                                                            |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| **Auth & Identity** | Google OAuth login, phone OTP verification, verified-student badge                                  |
+| **Profiles**        | College, course, year, skills, reputation, badges, wallet                                           |
+| **Tasks**           | Posting, categories, budget & deadline, file attachments, status lifecycle                          |
+| **Discovery**       | Search, filters (category/budget/deadline/skill/college), sorting                                   |
+| **Bidding**         | Proposal system, worker comparison & selection                                                      |
+| **Coordination**    | Real-time chat, contact sharing after acceptance, meeting scheduling                                |
+| **Delivery**        | Work submission, review, approve / request revision                                                 |
+| **Payments**        | Razorpay escrow (hold → release), wallet, withdrawals, transaction history                          |
+| **Trust**           | Ratings & reviews, skill verification badges, dispute management                                    |
+| **Engagement**      | Leaderboard & ranking (weekly/monthly/all-time/category), achievement badges, performance dashboard |
+| **Governance**      | Admin panel (users, tasks, disputes, payouts, analytics)                                            |
+| **Notifications**   | Real-time in-app notifications                                                                      |
 
 ---
 
 ## 🧱 Tech Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Frontend** | Next.js + Tailwind CSS | Hybrid SSR/CSR UI, mobile-first styling |
-| **Backend** | Next.js API Routes / Node.js | Serverless business logic & APIs |
-| **Database** | Supabase PostgreSQL | Relational data + Row Level Security |
-| **Auth** | Supabase Auth + Google OAuth | Verified-student authentication |
-| **Storage** | Supabase Storage | Task attachments & deliverables |
-| **Realtime** | Supabase Realtime | Live chat, notifications, task status |
-| **Payments** | Razorpay | Escrow funding, payouts, webhooks |
-| **Deployment** | Vercel | CI/CD, preview deploys, global CDN |
+| Layer          | Technology                   | Purpose                                 |
+| -------------- | ---------------------------- | --------------------------------------- |
+| **Frontend**   | Next.js + Tailwind CSS       | Hybrid SSR/CSR UI, mobile-first styling |
+| **Backend**    | Next.js API Routes / Node.js | Serverless business logic & APIs        |
+| **Database**   | Supabase PostgreSQL          | Relational data + Row Level Security    |
+| **Auth**       | Supabase Auth + Google OAuth | Verified-student authentication         |
+| **Storage**    | Supabase Storage             | Task attachments & deliverables         |
+| **Realtime**   | Supabase Realtime            | Live chat, notifications, task status   |
+| **Payments**   | Razorpay                     | Escrow funding, payouts, webhooks       |
+| **Deployment** | Vercel                       | CI/CD, preview deploys, global CDN      |
 
 ---
 
@@ -87,11 +109,11 @@ The platform manages the **entire gig lifecycle** — discovery, posting, biddin
 
 ## 👥 User Roles
 
-| Role | Can do |
-|---|---|
-| **Student (Poster)** | Post & fund tasks, review proposals, select worker, chat, approve work, rate, raise disputes |
-| **Student (Worker)** | Browse tasks, submit proposals, chat after acceptance, submit work, withdraw earnings, rate |
-| **Admin** | Verify/suspend/ban users, moderate content, resolve disputes, oversee payouts, grant badges, view analytics |
+| Role                 | Can do                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Student (Poster)** | Post & fund tasks, review proposals, select worker, chat, approve work, rate, raise disputes                |
+| **Student (Worker)** | Browse tasks, submit proposals, chat after acceptance, submit work, withdraw earnings, rate                 |
+| **Admin**            | Verify/suspend/ban users, moderate content, resolve disputes, oversee payouts, grant badges, view analytics |
 
 > A single student account can act as both poster and worker. Admin is a separate, audited role.
 
@@ -144,6 +166,7 @@ campusgig/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js** ≥ 18
 - A **Supabase** project (Postgres + Auth + Storage + Realtime)
 - A **Razorpay** account (test keys for development)
@@ -151,6 +174,7 @@ campusgig/
 - An **SMS/OTP** provider for phone verification
 
 ### 1. Clone & install
+
 ```bash
 git clone <your-repo-url> campusgig
 cd campusgig
@@ -158,36 +182,43 @@ npm install
 ```
 
 ### 2. Configure environment
+
 Copy the example file and fill in your keys:
+
 ```bash
 cp .env.example .env.local
 ```
 
-| Variable | Scope | Description |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | client | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | client | Public anon key (RLS-protected) |
-| `SUPABASE_SERVICE_ROLE_KEY` | server | **Secret** — server only, never expose |
-| `RAZORPAY_KEY_ID` | client/server | Razorpay key id |
-| `RAZORPAY_KEY_SECRET` | server | **Secret** Razorpay key |
-| `RAZORPAY_WEBHOOK_SECRET` | server | Webhook signature verification |
-| `OTP_PROVIDER_KEY` | server | SMS provider API key |
+| Variable                        | Scope         | Description                            |
+| ------------------------------- | ------------- | -------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | client        | Supabase project URL                   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | client        | Public anon key (RLS-protected)        |
+| `SUPABASE_SERVICE_ROLE_KEY`     | server        | **Secret** — server only, never expose |
+| `RAZORPAY_KEY_ID`               | client/server | Razorpay key id                        |
+| `RAZORPAY_KEY_SECRET`           | server        | **Secret** Razorpay key                |
+| `RAZORPAY_WEBHOOK_SECRET`       | server        | Webhook signature verification         |
+| `OTP_PROVIDER_KEY`              | server        | SMS provider API key                   |
 
 > ⚠️ Never commit `.env.local`. Keep service-role and secret keys server-side only.
 
 ### 3. Set up the database
+
 Apply the SQL migrations in [`supabase/migrations/`](./supabase/migrations) to your
 Supabase project — either via the Supabase CLI or by pasting them into the SQL editor:
+
 ```bash
 # using the Supabase CLI (linked project)
 supabase db push
 ```
+
 `0001_core_schema.sql` creates `users`, `profiles`, `wallets`, RLS policies, and a
 signup trigger that auto-provisions a profile + wallet for every new user.
 
 ### 4. Configure Google OAuth
+
 In **Supabase → Authentication → Providers → Google**, add your Google client ID/secret.
 Then under **URL Configuration**, add these redirect URLs:
+
 - `http://localhost:3000/auth/callback` (local)
 - `https://YOUR_DOMAIN/auth/callback` (production)
 
@@ -196,27 +227,40 @@ Then under **URL Configuration**, add these redirect URLs:
 > `.env.local` to switch real authentication on.
 
 ### 5. Run the dev server
+
 ```bash
 npm run dev
 ```
-App runs at **http://localhost:3000**.
 
-**Auth flow:** `/login` → Google OAuth → `/auth/callback` → `/onboarding`
-(first time) → `/dashboard`. Protected routes are guarded by `middleware.ts`.
+**Access the app:** Open **http://localhost:3000** in your browser.
 
----
+**Auth flow:**
 
-## 📜 Scripts
+```
+/login → Google OAuth → /auth/callback → /onboarding (phone OTP) → /dashboard
+```
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start local development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run lint` | Run linter |
-| `npm run typecheck` | TypeScript type checking |
-| `npm run test` | Run unit & integration tests |
-| `npm run test:e2e` | Run end-to-end tests |
+# Scripts
+
+| Command             | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| `npm run dev`       | Start local development server on `http://localhost:3000` |
+| `npm run build`     | Production build                                          |
+| `npm run start`     | Start production server                                   |
+| `npm run lint`      | Run ESLint                                                |
+| `npm run typecheck` | TypeScript type checking                                  |
+| `npm run test`      | Run unit & integration tests                              |
+| `npm run test:e2e`  | Run end-to-end tests                                      |
+
+### Development Best Practices
+
+- **Follow the module structure** outlined in [`SPEC.md` §7](./SPEC.md) (controllers → services → repositories).
+- **Validate server-side always** — never bypass RLS or auth guards.
+- **Test payment logic heavily** — escrow & wallet operations require the highest coverage.
+- **Run lint + typecheck + test** before opening a PR
+  | `npm run typecheck` | TypeScript type checking |
+  | `npm run test` | Run unit & integration tests |
+  | `npm run test:e2e` | Run end-to-end tests |
 
 > Script names are indicative; align with the final `package.json`.
 
@@ -241,6 +285,7 @@ Cancel / dispute → REFUNDED or PARTIAL split
 CampusGig ranks worker students by **performance, skills, and reputation** to reward quality work and surface trusted profiles — turning reputation into motivation.
 
 **How it works**
+
 ```
 Worker completes task → poster rates & reviews
 → system recomputes performance score (0–100)
@@ -250,7 +295,7 @@ Worker completes task → poster rates & reviews
 
 **Ranking criteria (weighted):** average rating · completed tasks · positive-review ratio · on-time completion rate · task success rate · skill verification badges · reliability score.
 
-**Leaderboard types:** 🗓️ Weekly · 📅 Monthly · 🏅 All-time · 🎯 Category-based (e.g., *Top Java Developer*, *Top Designer*, *Top Content Creator*).
+**Leaderboard types:** 🗓️ Weekly · 📅 Monthly · 🏅 All-time · 🎯 Category-based (e.g., _Top Java Developer_, _Top Designer_, _Top Content Creator_).
 
 **Achievement badges:** 🌟 Rising Star · 🚀 Top Performer · ⚡ Fast Delivery · 🛡️ Trusted Worker.
 
@@ -273,16 +318,16 @@ Worker completes task → poster rates & reviews
 
 ## 🗺️ Development Roadmap
 
-| Phase | Focus |
-|---|---|
-| **0 — Foundation** | Setup, auth, onboarding, design system |
-| **1 — Core Marketplace (MVP)** | Profiles, tasks, search, bidding, selection |
-| **2 — Transactions & Trust** | Escrow payments, wallet, submission/approval, reviews |
-| **3 — Communication** | Real-time chat, contact sharing, scheduling, notifications |
-| **4 — Governance** | Disputes, admin panel, skill badges |
-| **4b — Engagement** | Leaderboard & ranking system, achievement badges, performance dashboard |
-| **5 — Polish & Scale** | Performance, accessibility, email/push, monitoring |
-| **6 — Intelligence (Future)** | AI recommendations & smart matching |
+| Phase                          | Focus                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| **0 — Foundation**             | Setup, auth, onboarding, design system                                  |
+| **1 — Core Marketplace (MVP)** | Profiles, tasks, search, bidding, selection                             |
+| **2 — Transactions & Trust**   | Escrow payments, wallet, submission/approval, reviews                   |
+| **3 — Communication**          | Real-time chat, contact sharing, scheduling, notifications              |
+| **4 — Governance**             | Disputes, admin panel, skill badges                                     |
+| **4b — Engagement**            | Leaderboard & ranking system, achievement badges, performance dashboard |
+| **5 — Polish & Scale**         | Performance, accessibility, email/push, monitoring                      |
+| **6 — Intelligence (Future)**  | AI recommendations & smart matching                                     |
 
 > 🎯 **MVP target:** working end-to-end on a single campus. See [`PLAN.md` §14–21](./PLAN.md).
 
@@ -296,29 +341,73 @@ AI-based task↔worker recommendations · multi-campus expansion · PWA / mobile
 
 ## 📚 Documentation
 
-| Document | Purpose |
-|---|---|
+| Document               | Purpose                                                        |
+| ---------------------- | -------------------------------------------------------------- |
 | [`PLAN.md`](./PLAN.md) | Product plan: vision, features, architecture, phases, timeline |
-| [`SPEC.md`](./SPEC.md) | Technical spec: schema, APIs, flows, validation, security |
-| `README.md` | This file — overview & setup |
+| [`SPEC.md`](./SPEC.md) | Technical spec: schema, APIs, flows, validation, security      |
+| `README.md`            | This file — overview & setup                                   |
 
----
+We welcome contributions! Please follow these guidelines:
 
-## 🤝 Contributing
+1. **Fork the repository** and create a feature branch from `main`:
 
-1. Create a feature branch from `main`.
-2. Follow the module/service/repository structure in [`SPEC.md` §7](./SPEC.md).
-3. Validate all input server-side; never bypass RLS or auth guards.
-4. Add tests (money/escrow logic requires the highest coverage).
-5. Ensure `lint`, `typecheck`, and `test` pass before opening a PR.
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Follow the architecture** documented in [`SPEC.md` §7](./SPEC.md):
+   - Controllers (route handlers) → Services (business logic) → Repositories (data access)
+   - Keep payment/escrow logic isolated and heavily tested
+
+3. **Code standards:**
+   - TypeScript for type safety
+   - Server-side validation always (never trust the client)
+   - RLS + auth guards on all mutations
+   - Add comprehensive tests for payment/escrow operations
+
+4. **Before submitting a PR:**
+
+   ```bash
+   npm run lint
+   npm run typecheck
+   npm run test
+   npm run test:e2e
+   ```
+
+5. **Commit message format:**
+
+   ```
+   feat: add user profile editing
+   fix: resolve escrow payment race condition
+   docs: update leaderboard algorithm
+   ```
+
+6. **Create a Pull Request** with a clear description of changes and link any related issues.
 
 ---
 
 ## 📄 License
 
-This project is developed as an academic / final-year full-stack project. Add a license (e.g., MIT) before any public or commercial use.
+CampusGig is currently in **development**. This project is created as an academic/final-year full-stack project.
+
+**Future licensing:** We plan to release this under an open-source license (e.g., MIT) once ready for public use. For now, if you plan to use, modify, or fork this project, please reach out or wait for the official license announcement.
 
 ---
+
+## 🙋 Support & Questions
+
+- 📖 **Documentation:** See [`PLAN.md`](./PLAN.md) (product vision) and [`SPEC.md`](./SPEC.md) (technical details)
+- 🐛 **Report issues:** Open a GitHub issue with reproduction steps
+- 💬 **Discussions:** Use GitHub Discussions for feature requests and ideas
+- 📧 **Contact:** Reach out via GitHub for direct inquiries
+
+---
+
+<div align="center">
+
+**Built with ❤️ for student trust, safety, and opportunity. 🎓**
+
+\*Empowering students to collaborate, earn, and build reputation.
 
 <div align="center">
 

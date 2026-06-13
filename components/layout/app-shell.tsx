@@ -9,12 +9,14 @@ export function AppShell({
   userName,
   notifications,
   userId,
+  avatarUrl,
 }: {
   children: React.ReactNode;
   walletPaise?: number;
   userName?: string;
   notifications?: number;
   userId?: string;
+  avatarUrl?: string;
 }) {
   return (
     <div className="flex min-h-screen bg-background">
@@ -25,6 +27,7 @@ export function AppShell({
           userName={userName}
           notifications={notifications}
           userId={userId}
+          avatarUrl={avatarUrl}
         />
         <main className="flex-1 px-4 pb-24 pt-6 lg:px-8 lg:pb-10">
           <div className="mx-auto w-full max-w-6xl">{children}</div>

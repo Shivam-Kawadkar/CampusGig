@@ -14,6 +14,8 @@ import { cn, formatINR } from "@/lib/utils";
 import { TASK_CATEGORIES } from "../categories";
 import { createTaskSchema, type CreateTaskInput } from "../schema";
 import { createTask } from "../actions";
+import { FileUploader, type UploadedFile } from "@/components/shared/file-uploader";
+import { uploadAttachment } from "@/lib/upload-action";
 
 const STEPS = ["Category", "Details", "Budget & Deadline", "Review"] as const;
 
@@ -22,6 +24,7 @@ export function PostTaskForm() {
   const [step, setStep] = React.useState(0);
   const [submitting, setSubmitting] = React.useState(false);
   const [skillInput, setSkillInput] = React.useState("");
+  const [attachments, setAttachments] = React.useState<UploadedFile[]>([]);
 
   const form = useForm<CreateTaskInput>({
     resolver: zodResolver(createTaskSchema),
@@ -32,6 +35,7 @@ export function PostTaskForm() {
       categorySlug: "",
       budgetRupees: 500,
       skills: [],
+      attachmentUrls: [],
     },
   });
 
@@ -59,7 +63,10 @@ export function PostTaskForm() {
 
   async function onSubmit(data: CreateTaskInput) {
     setSubmitting(true);
-    const result = await createTask(data);
+    const result = await createTask({
+      ...data,
+      attachmentUrls: attachments.map((f) => f.url),
+    });
     if (result.ok) {
       toast.success("Task posted! 🎉");
       router.push(`/tasks/${result.taskId}`);
@@ -68,6 +75,19 @@ export function PostTaskForm() {
       toast.error("Couldn't post task", { description: result.error });
       setSubmitting(false);
     }
+  }
+
+  async function handleUpload(file: File) {
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadAttachment(fd, "task-attachments");
+    if (result.ok) {
+      setAttachments((prev) => [
+        ...prev,
+        { name: result.name, url: result.url, size: result.size, type: result.type },
+      ]);
+    }
+    return result;
   }
 
   return (
@@ -217,6 +237,18 @@ export function PostTaskForm() {
                     </div>
                   )}
                 </div>
+
+                {/* File attachments */}
+                <FileUploader
+                  label="Reference files (optional)"
+                  hint="PDF, images, docs, zip — max 10 MB each"
+                  files={attachments}
+                  onUpload={handleUpload}
+                  onRemove={(url) =>
+                    setAttachments((prev) => prev.filter((f) => f.url !== url))
+                  }
+                  maxFiles={5}
+                />
               </div>
             )}
 

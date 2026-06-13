@@ -29,3 +29,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# IDE settings
+.claude/
+.vscode/settings.json
+
+# Scratch/test files
+scratch_verify.js

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { formatINR } from "@/lib/utils";
+import { depositFunds, withdrawFunds } from "@/features/wallet/actions";
 
 const TOP_UP_AMOUNTS = [10000, 25000, 50000, 100000]; // paise
 const WITHDRAW_AMOUNTS = [10000, 25000, 50000, 100000]; // paise
@@ -23,30 +23,11 @@ export function TopUpSimulator({ currentBalance }: { currentBalance: number }) {
     setLoading(true);
     setMessage(null);
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setMessage({ ok: false, text: "Not signed in." });
-      setLoading(false);
-      return;
-    }
-
-    const { data: wallet } = await supabase
-      .from("wallets")
-      .select("balance")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const newBalance = (Number(wallet?.balance) || 0) + paiseAmount;
-
-    const { error } = await supabase
-      .from("wallets")
-      .update({ balance: newBalance })
-      .eq("user_id", user.id);
-
+    const result = await depositFunds(paiseAmount);
     setLoading(false);
-    if (error) {
-      setMessage({ ok: false, text: error.message });
+
+    if (!result.ok) {
+      setMessage({ ok: false, text: result.error });
     } else {
       setMessage({ ok: true, text: `${formatINR(paiseAmount)} added! Refreshing…` });
       setTimeout(() => window.location.reload(), 1200);
@@ -103,7 +84,7 @@ export function TopUpSimulator({ currentBalance }: { currentBalance: number }) {
       )}
 
       <p className="text-[11px] text-muted-foreground leading-relaxed">
-        💡 This is a simulated wallet for demo purposes. No real money is transferred.
+        💡 Simulated deposit — funds are credited instantly via the escrow engine. No real money moves.
       </p>
     </div>
   );
@@ -142,24 +123,11 @@ export function WithdrawSimulator({ currentBalance }: { currentBalance: number }
     setLoading(true);
     setMessage(null);
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setMessage({ ok: false, text: "Not signed in." });
-      setLoading(false);
-      return;
-    }
-
-    const newBalance = currentBalance - pendingAmount;
-
-    const { error } = await supabase
-      .from("wallets")
-      .update({ balance: newBalance })
-      .eq("user_id", user.id);
-
+    const result = await withdrawFunds(pendingAmount, upiId.trim());
     setLoading(false);
-    if (error) {
-      setMessage({ ok: false, text: error.message });
+
+    if (!result.ok) {
+      setMessage({ ok: false, text: result.error });
     } else {
       setStep("done");
       setTimeout(() => window.location.reload(), 2000);
@@ -233,13 +201,12 @@ export function WithdrawSimulator({ currentBalance }: { currentBalance: number }
         </div>
 
         <p className="text-[11px] text-muted-foreground">
-          🔒 Simulated only — no real transfer happens.
+          🔒 Simulated withdrawal — recorded in the ledger only.
         </p>
       </div>
     );
   }
 
-  // Step: form — pick amount
   return (
     <div className="space-y-4">
       {currentBalance === 0 ? (

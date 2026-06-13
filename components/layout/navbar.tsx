@@ -4,9 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Search, Wallet, User, Pencil, LogOut, ChevronDown } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { formatINR } from "@/lib/utils";
 import { signOut } from "@/features/auth/actions";
 import { createClient } from "@/lib/supabase/client";
@@ -16,11 +17,13 @@ export function Navbar({
   userName = "Student",
   notifications = 0,
   userId,
+  avatarUrl,
 }: {
   walletPaise?: number;
   userName?: string;
   notifications?: number;
   userId?: string;
+  avatarUrl?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
@@ -148,6 +151,9 @@ export function Navbar({
           </span>
         </Link>
 
+        {/* Theme toggle */}
+        <ThemeToggle />
+
         {/* Notifications */}
         <Button asChild variant="ghost" size="icon" className="relative">
           <Link href="/notifications">
@@ -169,6 +175,7 @@ export function Navbar({
             aria-expanded={open}
           >
             <Avatar className="h-9 w-9 cursor-pointer">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
               <AvatarFallback className="text-sm font-bold">
                 {userName.slice(0, 2).toUpperCase()}
               </AvatarFallback>

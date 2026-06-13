@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { holdEscrowForProposal, refundEscrowForTask } from "@/lib/payments/escrow";
 import { createProposalSchema, type CreateProposalInput } from "./schema";
 
 export type SubmitProposalResult =
@@ -116,7 +117,7 @@ export async function acceptProposal(
 
   const { data: proposal, error: proposalErr } = await supabase
     .from("applications")
-    .select("id, worker_id, status")
+    .select("id, worker_id, status, bid_amount")
     .eq("id", proposalId)
     .eq("task_id", taskId)
     .single();
@@ -129,6 +130,19 @@ export async function acceptProposal(
     return { ok: false, error: "This proposal is no longer pending." };
   }
 
+  const bidAmount = Number(proposal.bid_amount);
+
+  // Fund escrow from poster wallet before locking the task
+  const holdResult = await holdEscrowForProposal(
+    taskId,
+    proposalId,
+    user.id,
+    bidAmount
+  );
+  if (!holdResult.ok) {
+    return { ok: false, error: holdResult.error };
+  }
+
   // Update proposal status to accepted
   const { error: acceptErr } = await supabase
     .from("applications")
@@ -136,6 +150,7 @@ export async function acceptProposal(
     .eq("id", proposalId);
 
   if (acceptErr) {
+    await refundEscrowForTask(taskId);
     return { ok: false, error: acceptErr.message };
   }
 
@@ -169,12 +184,11 @@ export async function acceptProposal(
     .eq("id", taskId);
 
   if (taskUpdateErr) {
-    // Rollback proposal acceptance to keep state integrity
     await supabase
       .from("applications")
       .update({ status: "pending" })
       .eq("id", proposalId);
-
+    await refundEscrowForTask(taskId);
     return { ok: false, error: taskUpdateErr.message };
   }
 
@@ -246,6 +260,7 @@ export async function acceptProposal(
   revalidatePath("/my-work");
   revalidatePath("/chat");
   revalidatePath("/notifications");
+  revalidatePath("/wallet");
 
   return { ok: true };
 }

@@ -67,7 +67,7 @@ export async function updateSession(
     return NextResponse.redirect(url);
   }
 
-  // Block suspended users from protected routes
+  // Block suspended users from protected routes.
   if (user && isProtected(pathname)) {
     const { data: userRow } = await supabase
       .from("users")

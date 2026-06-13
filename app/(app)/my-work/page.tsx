@@ -114,7 +114,7 @@ export default async function MyWorkPage() {
   // 1. Tasks assigned to me as worker
   const { data: workerTasksRaw } = await supabase
     .from("tasks")
-    .select("id, title, budget, status, deadline, updated_at, poster_id, category:task_categories(name)")
+    .select("id, title, budget, status, deadline, updated_at, poster_id, category:categories(name)")
     .eq("selected_worker_id", user.id)
     .neq("status", "cancelled")
     .order("updated_at", { ascending: false });
@@ -147,7 +147,7 @@ export default async function MyWorkPage() {
       .map(async (a) => {
         const { data: task } = await supabase
           .from("tasks")
-          .select("id, title, budget, status, deadline, poster_id, category:task_categories(name)")
+          .select("id, title, budget, status, deadline, poster_id, category:categories(name)")
           .eq("id", a.task_id)
           .maybeSingle();
 
@@ -179,7 +179,7 @@ export default async function MyWorkPage() {
   // 3. Tasks I posted
   const { data: postedTasksRaw } = await supabase
     .from("tasks")
-    .select("id, title, budget, status, deadline, proposal_count, updated_at, category:task_categories(name)")
+    .select("id, title, budget, status, deadline, proposal_count, updated_at, category:categories(name)")
     .eq("poster_id", user.id)
     .order("updated_at", { ascending: false });
 

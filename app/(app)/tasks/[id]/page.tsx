@@ -405,7 +405,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
               </p>
               <div className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Shield className="size-3.5 text-success" />
-                <span>Simulated payout directly to wallet</span>
+                <span>Held in escrow until work is approved</span>
               </div>
             </div>
 

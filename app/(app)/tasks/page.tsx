@@ -2,13 +2,11 @@ import Link from "next/link";
 import { Plus, SearchX } from "lucide-react";
 import { FadeIn } from "@/components/motion/fade-in";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { TaskCard } from "@/components/shared/task-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { TaskFilters } from "@/features/tasks/components/task-filters";
 import { listTasks } from "@/features/tasks/repository";
 import { taskFiltersSchema } from "@/features/tasks/schema";
-import { demoTasks } from "@/lib/demo-data";
 
 export const metadata = { title: "Browse tasks" };
 
@@ -27,12 +25,7 @@ export default async function TasksPage({
   });
 
   const hasFilters = Boolean(sp.q || sp.category);
-  const realTasks = await listTasks(filters);
-
-  // Show sample tasks only when there are no real results AND no active filters,
-  // so the marketplace looks alive before any tasks exist / migration is applied.
-  const showDemo = realTasks.length === 0 && !hasFilters;
-  const tasks = showDemo ? demoTasks : realTasks;
+  const tasks = await listTasks(filters);
 
   return (
     <div className="space-y-6">
@@ -53,21 +46,29 @@ export default async function TasksPage({
 
       <TaskFilters />
 
-      {showDemo && (
-        <Badge variant="warning" className="w-fit">
-          Showing sample tasks — be the first to post a real one!
-        </Badge>
-      )}
 
       {tasks.length === 0 ? (
         <EmptyState
           icon={<SearchX className="size-6" />}
-          title="No tasks found"
-          description="Try adjusting your filters or search terms."
+          title={hasFilters ? "No tasks found" : "No tasks yet"}
+          description={
+            hasFilters
+              ? "Try adjusting your filters or search terms."
+              : "Be the first to post a task and get help from fellow students!"
+          }
           action={
-            <Button asChild variant="outline">
-              <Link href="/tasks">Clear filters</Link>
-            </Button>
+            hasFilters ? (
+              <Button asChild variant="outline">
+                <Link href="/tasks">Clear filters</Link>
+              </Button>
+            ) : (
+              <Button asChild variant="brand">
+                <Link href="/tasks/new">
+                  <Plus className="size-4" />
+                  Post the first task
+                </Link>
+              </Button>
+            )
           }
         />
       ) : (
