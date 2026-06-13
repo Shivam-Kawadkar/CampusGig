@@ -29,7 +29,7 @@ export function Logo({
   return (
     <Link href="/" className={cn("flex items-center", className)}>
       <Image
-        src="/icon.png"
+        src="/mark.png"
         alt="CampusGig"
         width={36}
         height={36}

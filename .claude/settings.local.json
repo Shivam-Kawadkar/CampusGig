@@ -11,7 +11,11 @@
       "Bash(npx tsc *)",
       "Bash(npm run *)",
       "Bash(file *.png)",
-      "Bash(node -p \"require\\('./package.json'\\).dependencies.next\")"
+      "Bash(node -p \"require\\('./package.json'\\).dependencies.next\")",
+      "Bash(git check-ignore *)",
+      "Bash(curl -s -o /dev/null -w \"auth health: HTTP %{http_code}\\\\n\" \"https://gqcostoovqvqogfktccm.supabase.co/auth/v1/health\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxY29zdG9vdnF2cW9nZmt0Y2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTUxMDYsImV4cCI6MjA5Njg3MTEwNn0.IGUSXKYNEZmb8jWy0MVwWBAsgHiNhcuzzV9xSQjoPRY\")",
+      "Bash(curl -s -o /dev/null -w \"profiles table: HTTP %{http_code}\\\\n\" \"https://gqcostoovqvqogfktccm.supabase.co/rest/v1/profiles?select=id&limit=1\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxY29zdG9vdnF2cW9nZmt0Y2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTUxMDYsImV4cCI6MjA5Njg3MTEwNn0.IGUSXKYNEZmb8jWy0MVwWBAsgHiNhcuzzV9xSQjoPRY\")",
+      "Bash(curl -s https://gqcostoovqvqogfktccm.supabase.co/auth/v1/settings -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxY29zdG9vdnF2cW9nZmt0Y2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTUxMDYsImV4cCI6MjA5Njg3MTEwNn0.IGUSXKYNEZmb8jWy0MVwWBAsgHiNhcuzzV9xSQjoPRY')"
     ]
   }
 }
