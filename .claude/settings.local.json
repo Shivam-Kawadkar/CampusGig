@@ -10,7 +10,8 @@
       "Bash(npm install *)",
       "Bash(npx tsc *)",
       "Bash(npm run *)",
-      "Bash(file *.png)"
+      "Bash(file *.png)",
+      "Bash(node -p \"require\\('./package.json'\\).dependencies.next\")"
     ]
   }
 }
