@@ -176,17 +176,33 @@ cp .env.example .env.local
 > ⚠️ Never commit `.env.local`. Keep service-role and secret keys server-side only.
 
 ### 3. Set up the database
+Apply the SQL migrations in [`supabase/migrations/`](./supabase/migrations) to your
+Supabase project — either via the Supabase CLI or by pasting them into the SQL editor:
 ```bash
-# apply schema + RLS policies + seed data
+# using the Supabase CLI (linked project)
 supabase db push
 ```
-Configure **Google OAuth** under Supabase → Authentication, and register your **Razorpay webhook** URL (`/api/webhooks/razorpay`) in the Razorpay dashboard.
+`0001_core_schema.sql` creates `users`, `profiles`, `wallets`, RLS policies, and a
+signup trigger that auto-provisions a profile + wallet for every new user.
 
-### 4. Run the dev server
+### 4. Configure Google OAuth
+In **Supabase → Authentication → Providers → Google**, add your Google client ID/secret.
+Then under **URL Configuration**, add these redirect URLs:
+- `http://localhost:3000/auth/callback` (local)
+- `https://YOUR_DOMAIN/auth/callback` (production)
+
+> The app **runs without Supabase keys** — public pages work and auth is disabled
+> gracefully. Add `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` to
+> `.env.local` to switch real authentication on.
+
+### 5. Run the dev server
 ```bash
 npm run dev
 ```
 App runs at **http://localhost:3000**.
+
+**Auth flow:** `/login` → Google OAuth → `/auth/callback` → `/onboarding`
+(first time) → `/dashboard`. Protected routes are guarded by `middleware.ts`.
 
 ---
 
