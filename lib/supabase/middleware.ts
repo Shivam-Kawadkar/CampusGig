@@ -67,6 +67,23 @@ export async function updateSession(
     return NextResponse.redirect(url);
   }
 
+  // Block suspended users from protected routes
+  if (user && isProtected(pathname)) {
+    const { data: userRow } = await supabase
+      .from("users")
+      .select("status")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (userRow?.status === "suspended") {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("error", "suspended");
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Signed-in users shouldn't sit on the login page.
   if (user && pathname === "/login") {
     const url = request.nextUrl.clone();

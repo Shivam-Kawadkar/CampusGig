@@ -7,6 +7,7 @@ import {
   Trophy,
   User,
   Plus,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,4 +28,5 @@ export const primaryNav: NavItem[] = [
   { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
   { label: "Wallet", href: "/wallet", icon: Wallet },
   { label: "Profile", href: "/profile", icon: User, mobile: true },
+  { label: "Admin Panel", href: "/admin", icon: Shield },
 ];
