@@ -28,7 +28,9 @@ export interface TaskSummary {
   skills: string[];
   proposalCount: number;
   poster: PersonSummary;
+  selectedWorkerId?: string | null;
 }
+
 
 export type AchievementBadge =
   | "rising_star"
