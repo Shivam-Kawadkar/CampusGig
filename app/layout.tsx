@@ -10,7 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CampusGig — Your campus. Your skills. Your income.",
+  title: {
+    default: "CampusGig — Skills to earn, tasks to complete",
+    template: "%s · CampusGig",
+  },
   description:
     "A trusted student marketplace: post tasks, earn money with your skills, and build a verified campus reputation.",
   metadataBase: new URL(

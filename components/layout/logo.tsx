@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export function Logo({
@@ -9,16 +9,33 @@ export function Logo({
   className?: string;
   showText?: boolean;
 }) {
+  // Full wordmark (mark + "CampusGig" + tagline)
+  if (showText) {
+    return (
+      <Link href="/" className={cn("flex items-center", className)}>
+        <Image
+          src="/logo.png"
+          alt="CampusGig"
+          width={160}
+          height={65}
+          priority
+          className="h-9 w-auto"
+        />
+      </Link>
+    );
+  }
+
+  // Compact G-mark only
   return (
-    <Link href="/" className={cn("flex items-center gap-2", className)}>
-      <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-brand text-primary-foreground shadow-soft">
-        <GraduationCap className="size-5" />
-      </div>
-      {showText && (
-        <span className="text-lg font-bold tracking-tight">
-          Campus<span className="text-gradient-brand">Gig</span>
-        </span>
-      )}
+    <Link href="/" className={cn("flex items-center", className)}>
+      <Image
+        src="/icon.png"
+        alt="CampusGig"
+        width={36}
+        height={36}
+        priority
+        className="h-9 w-9 rounded-lg shadow-soft"
+      />
     </Link>
   );
 }
