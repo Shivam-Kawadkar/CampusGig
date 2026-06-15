@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/user";
 import { FadeIn } from "@/components/motion/fade-in";
+import { AnimatedCounter } from "@/components/motion/animated-counter";
 import { Badge } from "@/components/ui/badge";
 import { formatINR } from "@/lib/utils";
 import { TopUpSimulator, WithdrawSimulator } from "@/features/wallet/components/top-up-simulator";
@@ -146,9 +147,11 @@ export default async function WalletPage() {
             <p className="relative text-xs font-semibold uppercase tracking-wider opacity-80">
               Available Balance
             </p>
-            <p className="relative mt-2 text-4xl font-extrabold tracking-tight">
-              {formatINR(balance)}
-            </p>
+            <AnimatedCounter
+              value={balance}
+              formatType="inr"
+              className="relative mt-2 block text-4xl font-extrabold tracking-tight"
+            />
             <div className="relative mt-4 flex items-center gap-1.5 text-xs opacity-80">
               <BadgeCheck className="size-3.5" />
               Escrow-protected · Simulated for demo
@@ -165,7 +168,11 @@ export default async function WalletPage() {
                 In Escrow
               </p>
             </div>
-            <p className="text-2xl font-bold text-warning">{formatINR(lockedBalance)}</p>
+            <AnimatedCounter
+              value={lockedBalance}
+              formatType="inr"
+              className="block text-2xl font-bold text-warning"
+            />
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Held for active task agreements. Released on completion.
             </p>

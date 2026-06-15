@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { RatingStars } from "@/components/shared/rating-stars";
 import { initials } from "@/lib/utils";
 import { FadeIn } from "@/components/motion/fade-in";
+import { AnimatedCounter } from "@/components/motion/animated-counter";
+import { CelebrateOnMount } from "@/components/motion/celebrate-on-mount";
 import type { LeaderboardEntry } from "@/lib/types";
 
 
@@ -63,15 +65,16 @@ export default async function LeaderboardPage() {
 
       {/* Podium Deck for Top 3 */}
       {podium.length > 0 && (
-        <div className="flex flex-col items-center justify-center pt-8 sm:flex-row sm:items-end sm:gap-6 max-w-3xl mx-auto">
+        <div className="relative flex flex-col items-center justify-center pt-8 sm:flex-row sm:items-end sm:gap-6 max-w-3xl mx-auto">
+          <CelebrateOnMount pieces={48} />
           {podiumOrder.map((entry, index) => {
             const isFirst = entry.rank === 1;
             const isSecond = entry.rank === 2;
             const isThird = entry.rank === 3;
 
             let heightClass = "h-48";
-            let podiumColor = "border-slate-200 bg-slate-50/50 dark:bg-slate-900/10";
-            let trophyColor = "text-slate-400";
+            let podiumColor = "border-muted-foreground/20 bg-muted/40";
+            let trophyColor = "text-muted-foreground";
             let avatarSize = "h-16 w-16";
 
             if (isFirst) {
@@ -81,14 +84,14 @@ export default async function LeaderboardPage() {
               avatarSize = "h-20 w-20 ring-4 ring-warning/30";
             } else if (isSecond) {
               heightClass = "h-48 order-1";
-              podiumColor = "border-slate-300 bg-slate-100/40 dark:bg-slate-800/10";
-              trophyColor = "text-slate-400";
-              avatarSize = "h-16 w-16 ring-2 ring-slate-400/20";
+              podiumColor = "border-muted-foreground/25 bg-muted/50";
+              trophyColor = "text-muted-foreground";
+              avatarSize = "h-16 w-16 ring-2 ring-muted-foreground/20";
             } else if (isThird) {
               heightClass = "h-40 order-3";
-              podiumColor = "border-amber-700/20 bg-orange-50/20 dark:bg-orange-900/5";
-              trophyColor = "text-orange-700/80";
-              avatarSize = "h-14 w-14 ring-2 ring-orange-700/10";
+              podiumColor = "border-warning/20 bg-warning/[0.03]";
+              trophyColor = "text-warning/70";
+              avatarSize = "h-14 w-14 ring-2 ring-warning/10";
             }
 
             return (
@@ -98,7 +101,7 @@ export default async function LeaderboardPage() {
               >
                 {/* Ranking Badge */}
                 <div className={`absolute -top-5 left-1/2 -translate-x-1/2 size-9 rounded-full flex items-center justify-center text-sm font-bold border-2 bg-card ${
-                  isFirst ? "border-warning text-warning-foreground" : isSecond ? "border-slate-400 text-slate-500" : "border-orange-600/30 text-orange-700"
+                  isFirst ? "border-warning text-warning" : isSecond ? "border-muted-foreground/50 text-muted-foreground" : "border-warning/40 text-warning/80"
                 }`}>
                   {entry.rank}
                 </div>
@@ -120,9 +123,11 @@ export default async function LeaderboardPage() {
 
                   <div className="flex items-center gap-1">
                     <Trophy className={`size-4 ${trophyColor}`} />
-                    <span className="font-extrabold text-sm text-foreground tracking-tight tabular-nums">
-                      {entry.performanceScore.toFixed(1)}
-                    </span>
+                    <AnimatedCounter
+                      value={entry.performanceScore}
+                      formatType="score"
+                      className="font-extrabold text-sm text-foreground tracking-tight"
+                    />
                   </div>
                   {entry.user.ratingAvg > 0 && (
                     <div className="flex items-center gap-1">

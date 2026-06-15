@@ -45,7 +45,7 @@ export function ResolveDisputePanel({ dispute }: ResolveDisputePanelProps) {
 
   if (dispute.status === "resolved" || done) {
     return (
-      <div className="mt-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 p-3 text-center text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+      <div className="mt-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 p-3 text-center text-xs text-emerald-700 dark:text-emerald-400 font-medium">
         ✅ Dispute resolved
       </div>
     );
@@ -167,7 +167,7 @@ export function DeleteUserButton({ userId, userName }: DeleteUserButtonProps) {
       size="sm"
       onClick={handleDelete}
       disabled={loading}
-      className="text-xs bg-red-600 hover:bg-red-700 text-white font-medium"
+      className="text-xs font-medium"
     >
       {loading ? "…" : "Delete"}
     </Button>
